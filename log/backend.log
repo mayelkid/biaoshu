@@ -1,0 +1,124 @@
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started parent process [31632]
+INFO:     Received SIGINT, exiting.
+INFO:     Terminated child process [31635]
+INFO:     Terminated child process [31636]
+INFO:     Terminated child process [31637]
+INFO:     Terminated child process [31638]
+INFO:     Terminated child process [31639]
+INFO:     Terminated child process [31640]
+INFO:     Terminated child process [31641]
+INFO:     Terminated child process [31642]
+INFO:     Terminated child process [31643]
+INFO:     Terminated child process [31644]
+INFO:     Terminated child process [31645]
+INFO:     Terminated child process [31646]
+INFO:     Terminated child process [31647]
+INFO:     Terminated child process [31648]
+INFO:     Terminated child process [31649]
+INFO:     Terminated child process [31650]
+INFO:     Terminated child process [31651]
+INFO:     Terminated child process [31652]
+INFO:     Terminated child process [31653]
+INFO:     Terminated child process [31655]
+INFO:     Terminated child process [31656]
+INFO:     Terminated child process [31657]
+INFO:     Terminated child process [31659]
+INFO:     Terminated child process [31660]
+INFO:     Waiting for child process [31635]
+INFO:     Started server process [31642]
+INFO:     Started server process [31650]
+INFO:     Waiting for application startup.
+INFO:     Started server process [31644]
+INFO:     Application startup complete.
+INFO:     Started server process [31641]
+INFO:     Waiting for application startup.
+INFO:     Waiting for application startup.
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Application startup complete.
+INFO:     Started server process [31639]
+INFO:     Application startup complete.
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Started server process [31643]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Started server process [31636]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Started server process [31645]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Started server process [31647]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Started server process [31635]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Waiting for child process [31636]
+INFO:     Waiting for child process [31637]
+INFO:     Started server process [31653]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Started server process [31648]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Started server process [31637]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Started server process [31649]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Waiting for child process [31638]
+INFO:     Started server process [31640]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Started server process [31652]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Started server process [31651]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Started server process [31638]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Waiting for child process [31639]
+INFO:     Waiting for child process [31640]
+INFO:     Waiting for child process [31641]
+INFO:     Waiting for child process [31642]
+INFO:     Waiting for child process [31643]
+INFO:     Waiting for child process [31644]
+INFO:     Waiting for child process [31645]
+INFO:     Waiting for child process [31646]
+INFO:     Started server process [31655]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Started server process [31660]
+INFO:     Waiting for application startup.
+INFO:     Started server process [31646]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Application startup complete.
+INFO:     Waiting for child process [31647]
+INFO:     Waiting for child process [31648]
+INFO:     Waiting for child process [31649]
+INFO:     Waiting for child process [31650]
+INFO:     Waiting for child process [31651]
+INFO:     Waiting for child process [31652]
+INFO:     Waiting for child process [31653]
+INFO:     Waiting for child process [31655]
+INFO:     Waiting for child process [31656]
+INFO:     Started server process [31659]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Started server process [31657]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Started server process [31656]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Waiting for child process [31657]
+INFO:     Waiting for child process [31659]
+INFO:     Waiting for child process [31660]
+INFO:     Stopping parent process [31632]
