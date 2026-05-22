@@ -103,14 +103,13 @@ const TaskList: React.FC<TaskListProps> = ({ onSelectTask }) => {
   }
 
   return (
-    <div>
+    <div className="h-full flex flex-col">
       {/* 头部 */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="px-4 py-6">
+      <div className="bg-white border-b border-gray-200 p-4">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-800">我的标书</h1>
-              <p className="text-gray-500 mt-1">管理您的标书制作任务</p>
+            <div className="flex items-center gap-4">
+              <h2 className="text-xl font-semibold text-gray-900">我的标书</h2>
+              <span className="text-sm text-gray-500">管理您的标书制作任务</span>
             </div>
             <button
               onClick={() => setShowModal('create')}
@@ -120,11 +119,10 @@ const TaskList: React.FC<TaskListProps> = ({ onSelectTask }) => {
               新建标书
             </button>
           </div>
-        </div>
       </div>
 
       {/* 任务列表 */}
-      <div className="px-4 py-6">
+      <div className="flex-1 overflow-auto p-4">
         {tasks.length === 0 ? (
           <div className="text-center py-16">
             <DocumentIcon className="w-16 h-16 text-gray-300 mx-auto" />
