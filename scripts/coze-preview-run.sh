@@ -24,6 +24,6 @@ cd ..
 # 等待后端启动
 sleep 3
 
-# 启动 vite 开发服务器（5000端口），前端通过 /api 代理访问后端
+# 启动 CRA 开发服务器（5000端口），通过 setupProxy.js 代理 /api 到后端
 cd frontend
-exec pnpm run vite
+exec pnpm run start
