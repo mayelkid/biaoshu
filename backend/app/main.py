@@ -52,16 +52,20 @@ async def health_check():
     }
 
 
+# 获取 static 目录的绝对路径
+STATIC_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static")
+
+
 # 静态文件服务（用于服务前端构建文件）
-if os.path.exists("static"):
-    # 挂载静态资源文件夹
-    app.mount("/static", StaticFiles(directory="static"), name="static")
+if os.path.exists(STATIC_DIR):
+    # 挂载静态资源文件夹（CSS/JS 等）
+    app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
     # 处理React应用的路由（SPA路由支持）
     @app.get("/")
     async def read_index():
         """根路径，返回前端首页"""
-        return FileResponse("static/index.html")
+        return FileResponse(os.path.join(STATIC_DIR, "index.html"))
 
     @app.get("/{full_path:path}")
     async def serve_react_app(full_path: str):
@@ -78,12 +82,12 @@ if os.path.exists("static"):
             raise HTTPException(status_code=404, detail="接口不存在")
 
         # 检查是否是静态文件
-        static_file_path = os.path.join("static", full_path)
+        static_file_path = os.path.join(STATIC_DIR, full_path)
         if os.path.exists(static_file_path) and os.path.isfile(static_file_path):
             return FileResponse(static_file_path)
 
         # 对于其他所有路径，返回React应用的index.html（SPA路由）
-        return FileResponse("static/index.html")
+        return FileResponse(os.path.join(STATIC_DIR, "index.html"))
 else:
     # 如果没有静态文件，返回API信息
     @app.get("/")
