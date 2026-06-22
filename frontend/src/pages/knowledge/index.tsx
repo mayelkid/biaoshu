@@ -29,6 +29,7 @@ import {
   categoryLabels,
   typeLabels,
   Company,
+  Folder,
 } from '../../services/knowledgeApi';
 
 type ViewMode = 'company-list' | 'company-detail';
@@ -41,6 +42,7 @@ const KnowledgeBase: React.FC = () => {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
   const [documents, setDocuments] = useState<KnowledgeDocument[]>([]);
+  const [folders, setFolders] = useState<Folder[]>([]);
   const [loading, setLoading] = useState(true);
   const [keyword, setKeyword] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<DocumentCategory | ''>('');
@@ -65,6 +67,11 @@ const KnowledgeBase: React.FC = () => {
     description: '',
   });
   const [uploadFile, setUploadFile] = useState<File | null>(null);
+  
+  // 文件夹弹窗
+  const [showFolderModal, setShowFolderModal] = useState(false);
+  const [folderName, setFolderName] = useState('');
+  
   const companiesLoadedRef = useRef(false);
 
   // 加载企业列表
@@ -112,6 +119,20 @@ const KnowledgeBase: React.FC = () => {
     }
   };
 
+  // 加载文件夹列表
+  const loadFolders = async () => {
+    if (!selectedCompany) return;
+    
+    try {
+      const response = await knowledgeApi.listFolders(selectedCompany.id);
+      if (response.success) {
+        setFolders(response.folders);
+      }
+    } catch (error) {
+      console.error('加载文件夹失败:', error);
+    }
+  };
+
   useEffect(() => {
     if (!companiesLoadedRef.current) {
       companiesLoadedRef.current = true;
@@ -122,6 +143,7 @@ const KnowledgeBase: React.FC = () => {
   useEffect(() => {
     if (selectedCompany) {
       loadDocuments();
+      loadFolders();
     }
   }, [keyword, selectedCategory, selectedCompany]);
 
@@ -318,6 +340,57 @@ const KnowledgeBase: React.FC = () => {
     }
   };
 
+  // 打开创建文件夹弹窗
+  const openFolderModal = () => {
+    setFolderName('');
+    setShowFolderModal(true);
+  };
+
+  // 关闭文件夹弹窗
+  const closeFolderModal = () => {
+    setShowFolderModal(false);
+    setFolderName('');
+  };
+
+  // 创建文件夹
+  const handleCreateFolder = async () => {
+    if (!folderName.trim()) {
+      toast.error('请输入文件夹名称');
+      return;
+    }
+
+    try {
+      await knowledgeApi.createFolder({
+        name: folderName.trim(),
+        company_id: selectedCompany?.id,
+      });
+      closeFolderModal();
+      loadFolders();
+      toast.success('创建成功');
+    } catch (error) {
+      console.error('创建文件夹失败:', error);
+      toast.error('创建失败');
+    }
+  };
+
+  // 删除文件夹
+  const handleDeleteFolder = async (folder: Folder) => {
+    await showConfirm({
+      title: '确认删除',
+      message: `确定要删除文件夹"${folder.name}"吗？`,
+      onConfirm: async () => {
+        try {
+          await knowledgeApi.deleteFolder(folder.id);
+          loadFolders();
+          toast.success('删除成功');
+        } catch (error) {
+          console.error('删除文件夹失败:', error);
+          toast.error('删除失败');
+        }
+      },
+    });
+  };
+
   // 删除文档
   const handleDeleteDocument = async (doc: KnowledgeDocument) => {
     await showConfirm({
@@ -478,13 +551,27 @@ const KnowledgeBase: React.FC = () => {
                 </div>
                 <span className="text-sm text-gray-500">共 {documents.length} 份资料</span>
               </div>
-              <button
-                onClick={() => openDocumentModal()}
-                className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                <ArrowUpTrayIcon className="w-5 h-5" />
-                上传资料
-              </button>
+              
+              {/* 操作按钮组 */}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={openFolderModal}
+                  className="flex items-center gap-2 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors"
+                >
+                  <FolderIcon className="w-5 h-5" />
+                  创建文件夹
+                </button>
+                
+                <div className="relative group">
+                  <button
+                    onClick={() => openDocumentModal()}
+                    className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    <ArrowUpTrayIcon className="w-5 h-5" />
+                    上传资料
+                  </button>
+                </div>
+              </div>
             </div>
 
             {/* 搜索和筛选 */}
@@ -518,13 +605,46 @@ const KnowledgeBase: React.FC = () => {
             </div>
           </div>
 
-          {/* 文档列表 */}
+          {/* 文件夹和文档列表 */}
           <div className="flex-1 overflow-auto p-4">
+            {/* 文件夹列表 */}
+            {folders.length > 0 && (
+              <div className="mb-6">
+                <h3 className="text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
+                  <FolderIcon className="w-4 h-4" />
+                  文件夹 ({folders.length})
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {folders.map((folder) => (
+                    <div
+                      key={folder.id}
+                      className="bg-amber-50 border border-amber-200 rounded-lg p-3 hover:shadow-sm transition-shadow"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <FolderIcon className="w-5 h-5 text-amber-600" />
+                          <span className="font-medium text-gray-800 truncate">{folder.name}</span>
+                        </div>
+                        <button
+                          onClick={() => handleDeleteFolder(folder)}
+                          className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                          title="删除"
+                        >
+                          <TrashIcon className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 文档列表 */}
             {loading ? (
               <div className="flex items-center justify-center h-full">
                 <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
               </div>
-            ) : documents.length === 0 ? (
+            ) : documents.length === 0 && folders.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-gray-500">
                 <DocumentIcon className="w-16 h-16 mb-4 text-gray-300" />
                 <p className="text-lg">暂无文档</p>
@@ -812,6 +932,57 @@ const KnowledgeBase: React.FC = () => {
               >
                 <FolderIcon className="w-4 h-4" />
                 {editingDoc ? '保存修改' : '确定上传'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 创建文件夹弹窗 */}
+      {showFolderModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
+            <div className="flex items-center justify-between p-4 border-b">
+              <h3 className="text-lg font-semibold text-gray-900">创建文件夹</h3>
+              <button
+                onClick={closeFolderModal}
+                className="p-1 hover:bg-gray-100 rounded transition-colors"
+              >
+                <XMarkIcon className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">文件夹名称 *</label>
+                <input
+                  type="text"
+                  value={folderName}
+                  onChange={(e) => setFolderName(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="请输入文件夹名称"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleCreateFolder();
+                    }
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 p-4 border-t bg-gray-50">
+              <button
+                onClick={closeFolderModal}
+                className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                取消
+              </button>
+              <button
+                onClick={handleCreateFolder}
+                className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors"
+              >
+                <FolderIcon className="w-4 h-4" />
+                创建文件夹
               </button>
             </div>
           </div>

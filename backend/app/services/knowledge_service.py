@@ -14,6 +14,8 @@ from app.models.knowledge_schema import (
     Company,
     CreateCompanyRequest,
     UpdateCompanyRequest,
+    Folder,
+    CreateFolderRequest,
 )
 
 
@@ -253,6 +255,62 @@ class KnowledgeService:
             documents = [doc for doc in documents if doc.category == category]
         
         return documents
+
+    def _get_folders_file(self, user_id: str) -> str:
+        """获取用户文件夹数据文件路径"""
+        return os.path.join(self._get_user_dir(user_id), "folders.json")
+
+    def _load_folders(self, user_id: str) -> List[Folder]:
+        """加载用户文件夹列表"""
+        file_path = self._get_folders_file(user_id)
+        if os.path.exists(file_path):
+            with open(file_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                return [Folder(**folder) for folder in data]
+        return []
+
+    def _save_folders(self, user_id: str, folders: List[Folder]) -> None:
+        """保存用户文件夹列表"""
+        file_path = self._get_folders_file(user_id)
+        with open(file_path, "w", encoding="utf-8") as f:
+            json.dump([folder.model_dump() for folder in folders], f, ensure_ascii=False, indent=2)
+
+    def get_folders_by_company(self, user_id: str, company_id: str) -> List[Folder]:
+        """获取指定企业的文件夹"""
+        folders = self._load_folders(user_id)
+        if company_id:
+            return [f for f in folders if f.company_id == company_id]
+        return folders
+
+    def create_folder(self, user_id: str, request: CreateFolderRequest) -> Folder:
+        """创建文件夹"""
+        folders = self._load_folders(user_id)
+        
+        now = datetime.now().isoformat()
+        folder = Folder(
+            id=str(uuid.uuid4()),
+            name=request.name,
+            parent_id=request.parent_id,
+            company_id=request.company_id,
+            user_id=user_id,
+            created_at=now,
+            updated_at=now,
+        )
+        
+        folders.append(folder)
+        self._save_folders(user_id, folders)
+        return folder
+
+    def delete_folder(self, user_id: str, folder_id: str) -> bool:
+        """删除文件夹"""
+        folders = self._load_folders(user_id)
+        original_count = len(folders)
+        folders = [f for f in folders if f.id != folder_id]
+        
+        if len(folders) < original_count:
+            self._save_folders(user_id, folders)
+            return True
+        return False
 
 
 # 全局服务实例

@@ -20,6 +20,9 @@ from app.models.knowledge_schema import (
     UpdateCompanyRequest,
     CompanyListResponse,
     CompanyResponse,
+    Folder,
+    CreateFolderRequest,
+    FolderListResponse,
 )
 from app.services.knowledge_service import get_knowledge_service, KnowledgeService
 from app.services.auth_service import get_auth_service, AuthService
@@ -223,3 +226,42 @@ async def download_document(
         filename=document.file_name,
         media_type="application/octet-stream",
     )
+
+
+# ========== 文件夹管理 ==========
+
+@router.get("/folders", response_model=FolderListResponse)
+async def list_folders(
+    company_id: str = Query("", description="企业ID"),
+    user_id: str = Depends(get_current_user_id),
+    knowledge_service: KnowledgeService = Depends(get_knowledge_service),
+):
+    """获取文件夹列表"""
+    folders = knowledge_service.get_folders_by_company(user_id, company_id)
+    return FolderListResponse(folders=folders)
+
+
+@router.post("/folders", response_model=FolderListResponse)
+async def create_folder(
+    request: CreateFolderRequest,
+    user_id: str = Depends(get_current_user_id),
+    knowledge_service: KnowledgeService = Depends(get_knowledge_service),
+):
+    """创建文件夹"""
+    folder = knowledge_service.create_folder(user_id, request)
+    folders = knowledge_service.get_folders_by_company(user_id, request.company_id or "")
+    return FolderListResponse(folders=folders)
+
+
+@router.delete("/folders/{folder_id}", response_model=DeleteResponse)
+async def delete_folder(
+    folder_id: str,
+    user_id: str = Depends(get_current_user_id),
+    knowledge_service: KnowledgeService = Depends(get_knowledge_service),
+):
+    """删除文件夹"""
+    success = knowledge_service.delete_folder(user_id, folder_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="文件夹不存在")
+    
+    return DeleteResponse(success=True, message="删除成功")

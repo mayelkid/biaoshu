@@ -87,6 +87,27 @@ export interface DeleteResponse {
   message: string;
 }
 
+export interface Folder {
+  id: string;
+  name: string;
+  parent_id?: string;
+  company_id?: string;
+  user_id: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateFolderRequest {
+  name: string;
+  parent_id?: string;
+  company_id?: string;
+}
+
+export interface FolderListResponse {
+  success: boolean;
+  folders: Folder[];
+}
+
 export const categoryLabels: Record<DocumentCategory, string> = {
   company_info: '企业信息',
   qualification: '资质资料',
@@ -248,6 +269,41 @@ export const knowledgeApi = {
       return response.data;
     } catch (error) {
       throw new Error(getErrorMessage(error, '下载文件失败'));
+    }
+  },
+
+  // ========== 文件夹管理 ==========
+
+  // 获取文件夹列表
+  async listFolders(companyId?: string): Promise<FolderListResponse> {
+    try {
+      const params: Record<string, string> = {};
+      if (companyId) params.company_id = companyId;
+      
+      const response = await axios.get('/api/knowledge/folders', { params });
+      return response.data;
+    } catch (error) {
+      throw new Error(getErrorMessage(error, '获取文件夹列表失败'));
+    }
+  },
+
+  // 创建文件夹
+  async createFolder(request: CreateFolderRequest): Promise<FolderListResponse> {
+    try {
+      const response = await axios.post('/api/knowledge/folders', request);
+      return response.data;
+    } catch (error) {
+      throw new Error(getErrorMessage(error, '创建文件夹失败'));
+    }
+  },
+
+  // 删除文件夹
+  async deleteFolder(folderId: string): Promise<DeleteResponse> {
+    try {
+      const response = await axios.delete(`/api/knowledge/folders/${folderId}`);
+      return response.data;
+    } catch (error) {
+      throw new Error(getErrorMessage(error, '删除文件夹失败'));
     }
   },
 };

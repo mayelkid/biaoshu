@@ -114,3 +114,29 @@ class DeleteResponse(BaseModel):
     """删除响应"""
     success: bool = Field(True, description="是否成功")
     message: str = Field("", description="消息")
+
+
+class Folder(BaseModel):
+    """文件夹模型"""
+    id: str = Field(..., description="文件夹ID")
+    name: str = Field(..., description="文件夹名称")
+    parent_id: Optional[str] = Field(None, description="父文件夹ID，None表示根目录")
+    company_id: Optional[str] = Field(None, description="所属企业ID")
+    user_id: str = Field(..., description="用户ID")
+    created_at: str = Field(..., description="创建时间")
+    updated_at: str = Field(..., description="更新时间")
+
+    model_config = {"validate_by_name": True}
+
+
+class CreateFolderRequest(BaseModel):
+    """创建文件夹请求"""
+    name: str = Field(..., min_length=1, description="文件夹名称")
+    parent_id: Optional[str] = Field(None, description="父文件夹ID")
+    company_id: Optional[str] = Field(None, description="企业ID")
+
+
+class FolderListResponse(BaseModel):
+    """文件夹列表响应"""
+    success: bool = Field(True, description="是否成功")
+    folders: List[Folder] = Field([], description="文件夹列表")
