@@ -1,0 +1,20 @@
+[project]
+sub_id = "c82bb7da"
+name = "frontend"
+requires = ["nodejs-24"]
+project_type = "web"
+entrypoint = "frontend/src/index.tsx"
+
+[preview]
+preview_enable = "enabled"
+
+[dev]
+build = ["bash", "scripts/coze-preview-build.sh"]
+run = ["bash", "scripts/coze-preview-run.sh"]
+
+[deploy]
+build = ["pnpm", "--dir", "frontend", "run", "build"]
+
+[deploy.profile]
+kind = "service"
+flavor = "web"

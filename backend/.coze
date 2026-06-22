@@ -1,0 +1,20 @@
+[project]
+sub_id = "b0e1c928"
+name = "backend"
+requires = ["python-3.12"]
+project_type = ""
+entrypoint = "backend/app/main.py"
+
+[preview]
+preview_enable = "disabled"
+
+[dev]
+build = ["bash", "scripts/coze-preview-build.sh"]
+run = ["bash", "scripts/coze-preview-run.sh"]
+
+[deploy]
+run = ["python3", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "5000"]
+
+[deploy.profile]
+kind = "service"
+flavor = "web"
