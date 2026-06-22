@@ -11,9 +11,18 @@ cd "$PROJECT_DIR"
 export PORT=5000
 export BROWSER=none
 
-# 清理 5000 端口
+# 清理端口
+fuser -k 8000/tcp 2>/dev/null || true
 fuser -k 5000/tcp 2>/dev/null || true
 sleep 1
+
+# 启动后端服务（8000端口）
+cd backend
+nohup python3 -m uvicorn app.main:app --host 0.0.0.0 --port 8000 > $LOG_DIR/backend.log 2>&1 &
+cd ..
+
+# 等待后端启动
+sleep 3
 
 # 启动 vite 开发服务器（5000端口），前端通过 /api 代理访问后端
 cd frontend
