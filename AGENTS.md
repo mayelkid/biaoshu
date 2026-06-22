@@ -58,7 +58,7 @@ AI 写标书助手是一个前后端集成的 Web 应用，用于辅助用户撰
 
 ### Coze 脚本
 - `scripts/coze-preview-build.sh` - 预览构建 (安装前端依赖)
-- `scripts/coze-preview-run.sh` - 预览运行 (启动前端 dev server)
+- `scripts/coze-preview-run.sh` - 预览运行 (前后端集成模式，后端服务在 5000 端口)
 - `scripts/coze-deploy-build.sh` - 部署构建 (构建前端 + 复制到 static)
 - `scripts/coze-deploy-run.sh` - 部署运行 (启动后端服务在 5000 端口)
 
@@ -96,7 +96,12 @@ bash scripts/coze-deploy-run.sh
 项目采用前后端集成部署模式：
 1. 前端构建产物 (`frontend/build/`) 复制到 `backend/static/`
 2. FastAPI 后端服务 (`uvicorn`) 统一在 **5000 端口** 提供服务
-3. 前端通过代理或环境变量 `REACT_APP_API_URL` 访问后端 API
+3. 后端同时服务前端页面和 API 接口，前端通过相对路径 `/api/...` 调用后端 API
+4. 后端 CORS 配置支持 `localhost:5000` 和 `127.0.0.1:5000`
+
+### 预览模式说明
+- 预览采用与部署相同的架构，前后端都在 5000 端口
+- 前端打包后由后端服务，支持完整功能测试（包括登录等需要后端 API 的功能）
 
 ## 用户偏好与长期约束
 
