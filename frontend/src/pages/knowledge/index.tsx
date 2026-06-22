@@ -415,7 +415,7 @@ const KnowledgeBase: React.FC = () => {
                         </div>
                         <div>
                           <h3 className="font-semibold text-gray-900">{company.name}</h3>
-                          <p className="text-sm text-gray-500">{company.document_count} 个文档</p>
+                          <p className="text-sm text-gray-500">{company.document_count} 份资料</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-1">
@@ -476,7 +476,7 @@ const KnowledgeBase: React.FC = () => {
                   <BuildingOfficeIcon className="w-6 h-6 text-blue-600" />
                   <h2 className="text-xl font-semibold text-gray-900">{selectedCompany.name}</h2>
                 </div>
-                <span className="text-sm text-gray-500">共 {documents.length} 个文档</span>
+                <span className="text-sm text-gray-500">共 {documents.length} 份资料</span>
               </div>
               <button
                 onClick={() => openDocumentModal()}
@@ -811,7 +811,7 @@ const KnowledgeBase: React.FC = () => {
                 className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
                 <FolderIcon className="w-4 h-4" />
-                {editingDoc ? '保存修改' : '创建文档'}
+                {editingDoc ? '保存修改' : '确定上传'}
               </button>
             </div>
           </div>

@@ -247,7 +247,7 @@ const TaskList: React.FC = () => {
                     <option value="">不关联企业</option>
                     {companies.map((company) => (
                       <option key={company.id} value={company.id}>
-                        {company.name} ({company.document_count} 个文档)
+                        {company.name} ({company.document_count} 份资料)
                       </option>
                     ))}
                   </select>
