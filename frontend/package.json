@@ -25,6 +25,7 @@
     "react-dom": "^19.1.1",
     "react-hot-toast": "^2.6.0",
     "react-markdown": "^10.1.0",
+    "react-router-dom": "^6.30.4",
     "react-scripts": "5.0.1",
     "rehype-highlight": "^7.0.2",
     "source-list-map": "^2.0.1",

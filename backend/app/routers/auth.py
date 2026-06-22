@@ -111,12 +111,18 @@ async def verify_token(token: str = Cookie(None)):
     auth_service = get_auth_service()
 
     if token is None:
-        raise HTTPException(status_code=401, detail="未登录")
+        return {
+            "success": False,
+            "message": "未登录"
+        }
 
     user_info = auth_service.verify_token(token)
 
     if user_info is None:
-        raise HTTPException(status_code=401, detail="登录已过期")
+        return {
+            "success": False,
+            "message": "token无效"
+        }
 
     return {
         "success": True,

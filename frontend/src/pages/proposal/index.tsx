@@ -2,6 +2,7 @@
  * 标书制作页面（独立页面）
  */
 import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { toast, Toaster } from 'react-hot-toast';
 import { ArrowLeftIcon, ArrowRightIcon, DocumentCheckIcon } from '@heroicons/react/24/outline';
 import StepBar from '../../components/StepBar';
@@ -9,35 +10,72 @@ import DocumentAnalysis from './DocumentAnalysis';
 import OutlineEdit from './OutlineEdit';
 import ContentEdit from './ContentEdit';
 import { useProposalTaskState } from '../../hooks/useProposalTaskState';
-import { ProposalTask } from '../../services';
-
-interface ProposalPageProps {
-  task: ProposalTask;
-  onBack: () => void;
-}
 
 const stepLabels = ['标书解析', '目录编辑', '正文编辑'];
 
-const ProposalPage: React.FC<ProposalPageProps> = ({ task, onBack }) => {
-  const { updateTask } = useProposalTaskState();
+const ProposalPage: React.FC = () => {
+  const { taskId } = useParams<{ taskId: string }>();
+  const navigate = useNavigate();
+  const { updateTask, getTaskById, loading } = useProposalTaskState();
 
-  const [currentStep, setCurrentStep] = useState(task.currentStep || 1);
-  const [fileContent, setFileContent] = useState(task.fileContent);
-  const [projectOverview, setProjectOverview] = useState(task.projectOverview);
-  const [techRequirements, setTechRequirements] = useState(task.techRequirements);
-  const [outlineData, setOutlineData] = useState(task.outlineData);
-  const [status, setStatus] = useState(task.status);
-  const [progress, setProgress] = useState(task.progress);
+  const [task, setTask] = useState<any>(null);
+  const [currentStep, setCurrentStep] = useState(1);
+  const [fileContent, setFileContent] = useState('');
+  const [projectOverview, setProjectOverview] = useState('');
+  const [techRequirements, setTechRequirements] = useState('');
+  const [outlineData, setOutlineData] = useState<any>(null);
+  const [status, setStatus] = useState<'draft' | 'analyzing' | 'outline' | 'content' | 'completed'>('draft');
+  const [progress, setProgress] = useState(0);
 
   useEffect(() => {
-    setCurrentStep(task.currentStep);
-    setFileContent(task.fileContent);
-    setProjectOverview(task.projectOverview);
-    setTechRequirements(task.techRequirements);
-    setOutlineData(task.outlineData);
-    setStatus(task.status);
-    setProgress(task.progress);
+    if (!taskId || loading) return;
+    const foundTask = getTaskById(taskId);
+    if (foundTask) {
+      setTask(foundTask);
+      setCurrentStep(foundTask.currentStep || 1);
+      setFileContent(foundTask.fileContent || '');
+      setProjectOverview(foundTask.projectOverview || '');
+      setTechRequirements(foundTask.techRequirements || '');
+      setOutlineData(foundTask.outlineData || null);
+      setStatus(foundTask.status || 'draft');
+      setProgress(foundTask.progress || 0);
+    }
+  }, [taskId, getTaskById, loading]);
+
+  useEffect(() => {
+    if (!task) return;
+    setCurrentStep(task.currentStep || 1);
+    setFileContent(task.fileContent || '');
+    setProjectOverview(task.projectOverview || '');
+    setTechRequirements(task.techRequirements || '');
+    setOutlineData(task.outlineData || null);
+    setStatus(task.status || 'draft');
+    setProgress(task.progress || 0);
   }, [task]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (!task) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-500">任务不存在或已被删除</p>
+          <button
+            onClick={() => navigate('/proposal')}
+            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            返回任务列表
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const handlePrev = async () => {
     if (currentStep > 1) {
@@ -63,15 +101,12 @@ const ProposalPage: React.FC<ProposalPageProps> = ({ task, onBack }) => {
 
   const handleNext = async () => {
     if (currentStep < 3) {
-      // 验证当前步骤是否已生成内容
       if (currentStep === 1) {
-        // 步骤1：标书解析页，需要生成了解析内容
         if (!projectOverview.trim() || !techRequirements.trim()) {
           toast.error('请先完成标书解析，生成项目概况和技术要求后再进行下一步');
           return;
         }
       } else if (currentStep === 2) {
-        // 步骤2：目录编辑页，需要生成了目录
         if (!outlineData || !outlineData.outline || outlineData.outline.length === 0) {
           toast.error('请先生成目录后再进行下一步');
           return;
@@ -166,7 +201,7 @@ const ProposalPage: React.FC<ProposalPageProps> = ({ task, onBack }) => {
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <button
-                onClick={onBack}
+                onClick={() => navigate('/proposal')}
                 className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"
               >
                 <ArrowLeftIcon className="w-5 h-5" />

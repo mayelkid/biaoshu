@@ -56,6 +56,7 @@ class ProposalTask(BaseModel):
     created_at: str = Field(..., alias="createdAt", description="创建时间")
     updated_at: str = Field(..., alias="updatedAt", description="更新时间")
     user_id: str = Field(..., alias="userId", description="用户ID")
+    company_id: Optional[str] = Field(None, alias="companyId", description="关联的企业ID")
 
 
 class CreateTaskRequest(BaseModel):
@@ -63,6 +64,7 @@ class CreateTaskRequest(BaseModel):
     
     name: str = Field(..., description="任务名称")
     description: Optional[str] = Field("", description="任务描述")
+    company_id: Optional[str] = Field(None, description="关联的企业ID")
 
 
 class UpdateTaskRequest(BaseModel):

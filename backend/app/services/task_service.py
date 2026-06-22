@@ -10,6 +10,7 @@ from ..models.task_schema import (
     ProposalTask,
     TaskStatus,
     UpdateTaskRequest,
+    CreateTaskRequest,
 )
 
 # 任务数据存储目录
@@ -33,7 +34,7 @@ def get_task_file_path(user_id: str, task_id: str) -> str:
     return os.path.join(user_dir, f"{task_id}.json")
 
 
-def create_task(user_id: str, name: str, description: str = "") -> ProposalTask:
+def create_task(user_id: str, name: str, description: str = "", company_id: str = None) -> ProposalTask:
     """创建新任务"""
     ensure_tasks_dir()
     
@@ -52,12 +53,13 @@ def create_task(user_id: str, name: str, description: str = "") -> ProposalTask:
         created_at=now,
         updated_at=now,
         user_id=user_id,
+        company_id=company_id,
     )
     
-    # 保存任务（使用dict(by_alias=True)确保输出camelCase格式）
+    # 保存任务（使用model_dump(by_alias=True)确保输出camelCase格式）
     task_file = get_task_file_path(user_id, task.id)
     with open(task_file, "w", encoding="utf-8") as f:
-        json.dump(task.dict(by_alias=True), f, ensure_ascii=False, indent=2)
+        json.dump(task.model_dump(by_alias=True), f, ensure_ascii=False, indent=2)
     
     return task
 
@@ -102,7 +104,7 @@ def update_task(user_id: str, task_id: str, updates: UpdateTaskRequest) -> Optio
         return None
     
     # 获取更新数据（支持alias和field_name两种方式）
-    update_data = updates.dict(by_alias=True, exclude_none=True)
+    update_data = updates.model_dump(by_alias=True, exclude_none=True)
     
     # 应用更新
     for key, value in update_data.items():
@@ -135,7 +137,7 @@ def update_task(user_id: str, task_id: str, updates: UpdateTaskRequest) -> Optio
     # 保存任务
     task_file = get_task_file_path(user_id, task.id)
     with open(task_file, "w", encoding="utf-8") as f:
-        json.dump(task.dict(by_alias=True), f, ensure_ascii=False, indent=2)
+        json.dump(task.model_dump(by_alias=True), f, ensure_ascii=False, indent=2)
     
     return task
 
@@ -162,6 +164,6 @@ def complete_task(user_id: str, task_id: str) -> Optional[ProposalTask]:
     
     task_file = get_task_file_path(user_id, task_id)
     with open(task_file, "w", encoding="utf-8") as f:
-        json.dump(task.dict(by_alias=True), f, ensure_ascii=False, indent=2)
+        json.dump(task.model_dump(by_alias=True), f, ensure_ascii=False, indent=2)
     
     return task

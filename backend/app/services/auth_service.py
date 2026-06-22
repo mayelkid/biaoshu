@@ -81,9 +81,10 @@ class AuthService:
             return None
 
         token_data = self._tokens[token]
-        if time.time() > token_data['expires_at']:
-            del self._tokens[token]
-            return None
+        # 去掉时效验证，只验证token是否存在
+        # if time.time() > token_data['expires_at']:
+        #     del self._tokens[token]
+        #     return None
 
         return UserInfo(
             user_id=token_data['user_id'],
@@ -103,6 +104,13 @@ class AuthService:
             return None
         user = self._users[username]
         return UserInfo(user_id=user['user_id'], username=user['username'])
+
+    def get_current_user_id(self, token: str) -> Optional[str]:
+        """从token获取当前用户ID"""
+        user_info = self.verify_token(token)
+        if user_info:
+            return user_info.user_id
+        return None
 
 
 # 全局认证服务实例

@@ -22,6 +22,43 @@ class DocumentCategory(str, Enum):
     OTHER = "other"                     # 其他
 
 
+class Company(BaseModel):
+    """企业模型"""
+    id: str = Field(..., description="企业ID")
+    name: str = Field(..., description="企业名称")
+    description: Optional[str] = Field(None, description="企业描述")
+    user_id: str = Field(..., description="用户ID")
+    created_at: str = Field(..., description="创建时间")
+    updated_at: str = Field(..., description="更新时间")
+    document_count: int = Field(0, description="文档数量")
+
+    model_config = {"validate_by_name": True}
+
+
+class CreateCompanyRequest(BaseModel):
+    """创建企业请求"""
+    name: str = Field(..., min_length=1, description="企业名称")
+    description: Optional[str] = Field(None, description="企业描述")
+
+
+class UpdateCompanyRequest(BaseModel):
+    """更新企业请求"""
+    name: Optional[str] = Field(None, min_length=1, description="企业名称")
+    description: Optional[str] = Field(None, description="企业描述")
+
+
+class CompanyListResponse(BaseModel):
+    """企业列表响应"""
+    success: bool = Field(True, description="是否成功")
+    companies: List[Company] = Field([], description="企业列表")
+
+
+class CompanyResponse(BaseModel):
+    """企业响应"""
+    success: bool = Field(True, description="是否成功")
+    company: Optional[Company] = Field(None, description="企业信息")
+
+
 class KnowledgeDocument(BaseModel):
     """知识库文档模型"""
     id: str = Field(..., description="文档ID")
@@ -34,6 +71,7 @@ class KnowledgeDocument(BaseModel):
     tags: Optional[List[str]] = Field([], description="标签列表")
     description: Optional[str] = Field(None, description="文档描述")
     user_id: str = Field(..., description="用户ID")
+    company_id: Optional[str] = Field(None, description="企业ID")
     created_at: str = Field(..., description="创建时间")
     updated_at: str = Field(..., description="更新时间")
 
@@ -48,6 +86,7 @@ class CreateDocumentRequest(BaseModel):
     category: DocumentCategory = Field(..., description="文档分类")
     tags: Optional[List[str]] = Field([], description="标签列表")
     description: Optional[str] = Field(None, description="文档描述")
+    company_id: Optional[str] = Field(None, description="企业ID")
 
 
 class UpdateDocumentRequest(BaseModel):

@@ -161,7 +161,7 @@ const ContentEdit: React.FC<ContentEditProps> = ({
                   <ReactMarkdown>{currentContent}</ReactMarkdown>
                 </div>
               ) : (
-                <div className="text-gray-400 italic py-4">
+                <div className="text-gray-400  py-4">
                   <DocumentTextIcon className="inline w-4 h-4 mr-2" />
                   {progress.generating.has(item.id) ? (
                     <span className="text-blue-600">正在生成内容...</span>
@@ -450,15 +450,15 @@ const ContentEdit: React.FC<ContentEditProps> = ({
         <div className="p-8">
           <div className="prose max-w-none">
             {/* 文档标题 */}
-            <h1 className="text-3xl font-bold text-gray-900 mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-6">
               {outlineData.project_name || '投标技术文件'}
             </h1>
             
             {/* 项目概述 */}
             {outlineData.project_overview && (
-              <div className="bg-blue-50 border-l-4 border-blue-400 p-6 mb-8">
+              <div className="bg-blue-50 border-l-4 border-blue-400 p-6 mb-8 mt-0">
                 <h2 className="text-lg font-semibold text-blue-900 mb-2">项目概述</h2>
-                <p className="text-blue-800">{outlineData.project_overview}</p>
+                <p className="text-blue-800 overflow-auto max-h-400" style={{whiteSpace:'pre-wrap'}}>{outlineData.project_overview}</p>
               </div>
             )}
 

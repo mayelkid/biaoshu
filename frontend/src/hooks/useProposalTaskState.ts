@@ -1,7 +1,7 @@
 /**
  * 标书任务状态管理Hook - 使用后端API
  */
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { ProposalTask, OutlineData } from '../services';
 import { taskApi, getErrorMessage } from '../services';
 
@@ -10,6 +10,7 @@ export const useProposalTaskState = () => {
   const [currentTaskId, setCurrentTaskId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const initializedRef = useRef(false);
 
   const currentTask = tasks.find(t => t.id === currentTaskId) || null;
 
@@ -30,9 +31,12 @@ export const useProposalTaskState = () => {
     }
   }, []);
 
-  // 初始化加载任务列表
+  // 初始化加载任务列表（防止 StrictMode 双重调用）
   useEffect(() => {
-    loadTasks();
+    if (!initializedRef.current) {
+      initializedRef.current = true;
+      loadTasks();
+    }
   }, [loadTasks]);
 
   // 刷新任务列表
@@ -41,13 +45,17 @@ export const useProposalTaskState = () => {
   }, [loadTasks]);
 
   // 添加任务
-  const createTask = useCallback(async (name?: string, description?: string) => {
+  const createTask = useCallback(async (name?: string, description?: string, companyId?: string) => {
     setError(null);
     try {
-      const response = await taskApi.createTask({
+      const payload: { name: string; description: string; company_id?: string } = {
         name: name || '未命名标书',
         description: description || '',
-      });
+      };
+      if (companyId) {
+        payload.company_id = companyId;
+      }
+      const response = await taskApi.createTask(payload);
       if (response.data.success) {
         await loadTasks();
         return response.data.task;
@@ -188,6 +196,11 @@ export const useProposalTaskState = () => {
     });
   }, [updateTask]);
 
+  // 根据ID获取任务
+  const getTaskById = useCallback((taskId: string): ProposalTask | null => {
+    return tasks.find(t => t.id === taskId) || null;
+  }, [tasks]);
+
   return {
     tasks,
     currentTask,
@@ -198,6 +211,7 @@ export const useProposalTaskState = () => {
     updateTask,
     deleteTask,
     selectTask,
+    getTaskById,
     updateFileContent,
     updateAnalysisResults,
     updateOutline,

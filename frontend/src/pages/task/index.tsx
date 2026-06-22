@@ -2,49 +2,75 @@
  * 任务列表页面
  */
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import { PlusIcon, DocumentIcon, TrashIcon, ChevronRightIcon, ClockIcon, CheckCircleIcon, PencilIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, DocumentIcon, TrashIcon, ChevronRightIcon, ClockIcon, CheckCircleIcon, PencilIcon, BuildingOfficeIcon } from '@heroicons/react/24/outline';
 import { DocumentTextIcon} from '@heroicons/react/24/solid';
 import { useProposalTaskState } from '../../hooks/useProposalTaskState';
 import { ProposalTask } from '../../services';
 import { showConfirm } from '../../hooks/useGlobalConfirm';
+import { knowledgeApi, Company } from '../../services/knowledgeApi';
 
-interface TaskListProps {
-  onSelectTask: (task: ProposalTask) => void;
-}
-
-const TaskList: React.FC<TaskListProps> = ({ onSelectTask }) => {
+const TaskList: React.FC = () => {
   const { tasks, loading, error, createTask, deleteTask, updateTask, refreshTasks } = useProposalTaskState();
 
+  const navigate = useNavigate();
   const [showModal, setShowModal] = React.useState<'create' | 'edit' | null>(null);
   const [newTaskName, setNewTaskName] = React.useState('');
   const [newTaskDescription, setNewTaskDescription] = React.useState('');
+  const [selectedCompanyId, setSelectedCompanyId] = React.useState('');
+  const [companies, setCompanies] = React.useState<Company[]>([]);
   const [editingTask, setEditingTask] = React.useState<ProposalTask | null>(null);
+  const companiesLoadedRef = React.useRef(false);
+
+  React.useEffect(() => {
+    const loadCompanies = async () => {
+      if (companiesLoadedRef.current) return;
+      companiesLoadedRef.current = true;
+      try {
+        const response = await knowledgeApi.listCompanies();
+        if (response.success) {
+          setCompanies(response.companies);
+        }
+      } catch (error) {
+        console.error('加载企业列表失败:', error);
+      }
+    };
+    loadCompanies();
+  }, []);
 
   const handleCreateTask = async () => {
     if (!newTaskName.trim()) return;
-    await createTask(newTaskName.trim(), newTaskDescription.trim());
+    await createTask(newTaskName.trim(), newTaskDescription.trim(), selectedCompanyId || undefined);
     setNewTaskName('');
     setNewTaskDescription('');
+    setSelectedCompanyId('');
     setShowModal(null);
+  };
+
+  const handleEdit = (task: ProposalTask) => {
+    setEditingTask(task);
+    setNewTaskName(task.name);
+    setNewTaskDescription(task.description || '');
+    setShowModal('edit');
   };
 
   const handleUpdateTask = async () => {
     if (!editingTask || !newTaskName.trim()) return;
-    await updateTask(editingTask.id, {
-      name: newTaskName.trim(),
-      description: newTaskDescription.trim(),
+    await updateTask(editingTask.id, { 
+      name: newTaskName.trim(), 
+      description: newTaskDescription.trim() 
     });
+    setEditingTask(null);
     setNewTaskName('');
     setNewTaskDescription('');
-    setEditingTask(null);
     setShowModal(null);
   };
 
-  const handleDelete = async (taskId: string) => {
-    await showConfirm({
+  const handleDelete = (taskId: string) => {
+    showConfirm({
       title: '确认删除',
-      message: '确定要删除这个任务吗？',
+      message: '删除后无法恢复，确定要删除吗？',
       onConfirm: async () => {
         await deleteTask(taskId);
         toast.success('删除成功');
@@ -52,25 +78,18 @@ const TaskList: React.FC<TaskListProps> = ({ onSelectTask }) => {
     });
   };
 
-  const handleEdit = (task: ProposalTask) => {
-    setEditingTask(task);
-    setNewTaskName(task.name);
-    setNewTaskDescription(task.description);
-    setShowModal('edit');
-  };
-
   const getStatusBadge = (status: string) => {
-    const statusMap: Record<string, { label: string; className: string }> = {
-      draft: { label: '草稿', className: 'bg-gray-100 text-gray-600' },
-      analyzing: { label: '分析中', className: 'bg-yellow-100 text-yellow-600' },
-      outline: { label: '目录编辑', className: 'bg-blue-100 text-blue-600' },
-      content: { label: '内容编辑', className: 'bg-green-100 text-green-600' },
-      completed: { label: '已完成', className: 'bg-purple-100 text-purple-600' },
+    const badges: Record<string, { text: string; className: string }> = {
+      pending: { text: '待处理', className: 'bg-yellow-100 text-yellow-700' },
+      analyzing: { text: '解析中', className: 'bg-blue-100 text-blue-700' },
+      outlining: { text: '大纲编辑', className: 'bg-purple-100 text-purple-700' },
+      writing: { text: '写作中', className: 'bg-indigo-100 text-indigo-700' },
+      completed: { text: '已完成', className: 'bg-green-100 text-green-700' },
     };
-    const statusInfo = statusMap[status] || { label: status, className: 'bg-gray-100 text-gray-600' };
+    const badge = badges[status] || badges.pending;
     return (
-      <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusInfo.className}`}>
-        {statusInfo.label}
+      <span className={`px-2 py-1 text-xs font-medium rounded-full ${badge.className}`}>
+        {badge.text}
       </span>
     );
   };
@@ -81,10 +100,6 @@ const TaskList: React.FC<TaskListProps> = ({ onSelectTask }) => {
     }
     return <ClockIcon className="w-5 h-5 text-gray-400" />;
   };
-
-  React.useEffect(() => {
-    refreshTasks();
-  }, [refreshTasks]);
 
   if (loading) {
     return (
@@ -135,7 +150,7 @@ const TaskList: React.FC<TaskListProps> = ({ onSelectTask }) => {
               <div
                 key={task.id}
                 className="bg-white rounded-xl shadow-sm border hover:shadow-md transition-shadow cursor-pointer"
-                onClick={() => onSelectTask(task)}
+                onClick={() => navigate(`/proposal/${task.id}`)}
               >
                 <div className="p-5">
                   <div className="flex items-start justify-between">
@@ -186,15 +201,6 @@ const TaskList: React.FC<TaskListProps> = ({ onSelectTask }) => {
                       <ChevronRightIcon className="w-5 h-5 text-gray-400" />
                     </div>
                   </div>
-                  {/* 进度条 */}
-                  <div className="mt-4">
-                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-blue-600 rounded-full transition-all"
-                        style={{ width: `${task.progress}%` }}
-                      ></div>
-                    </div>
-                  </div>
                 </div>
               </div>
             ))}
@@ -211,7 +217,7 @@ const TaskList: React.FC<TaskListProps> = ({ onSelectTask }) => {
             </h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">任务名称</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">标书名称</label>
                 <input
                   type="text"
                   value={newTaskName}
@@ -221,17 +227,35 @@ const TaskList: React.FC<TaskListProps> = ({ onSelectTask }) => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">任务描述（可选）</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">标书描述</label>
                 <textarea
                   value={newTaskDescription}
                   onChange={(e) => setNewTaskDescription(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="请输入标书描述"
                   rows={3}
+                  placeholder="请输入标书描述"
                 />
               </div>
+              {showModal === 'create' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">关联企业（可选）</label>
+                  <select
+                    value={selectedCompanyId}
+                    onChange={(e) => setSelectedCompanyId(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="">不关联企业</option>
+                    {companies.map((company) => (
+                      <option key={company.id} value={company.id}>
+                        {company.name} ({company.document_count} 个文档)
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-gray-500 mt-1">关联企业后，AI生成标书时将参考该企业的资料</p>
+                </div>
+              )}
             </div>
-            <div className="flex gap-3 mt-6">
+            <div className="flex justify-end gap-3 mt-6">
               <button
                 onClick={() => {
                   setShowModal(null);
@@ -239,14 +263,13 @@ const TaskList: React.FC<TaskListProps> = ({ onSelectTask }) => {
                   setNewTaskName('');
                   setNewTaskDescription('');
                 }}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
               >
                 取消
               </button>
               <button
                 onClick={showModal === 'create' ? handleCreateTask : handleUpdateTask}
-                disabled={!newTaskName.trim()}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
                 {showModal === 'create' ? '创建' : '保存'}
               </button>

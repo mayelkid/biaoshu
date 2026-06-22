@@ -1,20 +1,28 @@
 import React, { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { DocumentTextIcon, BookOpenIcon, Cog6ToothIcon, ChevronDoubleLeftIcon, ChevronDoubleRightIcon } from '@heroicons/react/24/outline';
 import logo from '../assets/img/logo.png';
 
 interface SidebarProps {
-  currentMenu: 'proposal' | 'knowledge';
-  onMenuChange: (menu: 'proposal' | 'knowledge') => void;
   onSettingsClick?: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ currentMenu, onMenuChange, onSettingsClick }) => {
+const Sidebar: React.FC<SidebarProps> = ({ onSettingsClick }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const location = useLocation();
 
   const menuItems = [
-    { id: 'proposal' as const, label: '标书制作', icon: DocumentTextIcon },
-    { id: 'knowledge' as const, label: '知识库', icon: BookOpenIcon },
+    { id: 'proposal' as const, label: '标书制作', icon: DocumentTextIcon, path: '/proposal' },
+    { id: 'knowledge' as const, label: '知识库', icon: BookOpenIcon, path: '/knowledge' },
   ];
+
+  const getActiveMenu = () => {
+    if (location.pathname.startsWith('/proposal')) return 'proposal';
+    if (location.pathname.startsWith('/knowledge')) return 'knowledge';
+    return 'proposal';
+  };
+
+  const activeMenu = getActiveMenu();
 
   return (
     <div className={`flex flex-col bg-white shadow-sm border-r border-gray-200 transition-all duration-300 ${
@@ -44,11 +52,11 @@ const Sidebar: React.FC<SidebarProps> = ({ currentMenu, onMenuChange, onSettings
 
         <nav className="space-y-2">
           {menuItems.map((item) => (
-            <button
+            <Link
               key={item.id}
-              onClick={() => onMenuChange(item.id)}
+              to={item.path}
               className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
-                currentMenu === item.id
+                activeMenu === item.id
                   ? 'bg-blue-50 text-blue-700'
                   : 'text-gray-700 hover:bg-gray-100'
               }`}
@@ -56,7 +64,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentMenu, onMenuChange, onSettings
             >
               <item.icon className="w-5 h-5 mr-3 flex-shrink-0" />
               {!isCollapsed && item.label}
-            </button>
+            </Link>
           ))}
         </nav>
       </div>
@@ -64,7 +72,6 @@ const Sidebar: React.FC<SidebarProps> = ({ currentMenu, onMenuChange, onSettings
       {/* 折叠按钮和设置按钮 */}
       <div className="border-t border-gray-200 p-2">
        
-
         {/* 设置按钮 */}
         {onSettingsClick && (
           <button
