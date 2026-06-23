@@ -773,13 +773,24 @@ const KnowledgeBase: React.FC = () => {
                       </div>
                       <div className="flex items-center gap-1">
                         {doc.file_path && (
-                          <button
-                            onClick={() => handlePreview(doc)}
-                            className="p-1 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded transition-colors"
-                            title="预览"
-                          >
-                            <EyeIcon className="w-4 h-4" />
-                          </button>
+                          <>
+                            <button
+                              onClick={() => handlePreview(doc)}
+                              className="p-1 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded transition-colors"
+                              title="预览"
+                            >
+                              <EyeIcon className="w-4 h-4" />
+                            </button>
+                            <a
+                              href={`/api/knowledge/documents/${doc.id}/download`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                              title="下载"
+                            >
+                              <ArrowDownTrayIcon className="w-4 h-4" />
+                            </a>
+                          </>
                         )}
                         <button
                           onClick={() => openDocumentModal(doc)}
@@ -1098,15 +1109,6 @@ const KnowledgeBase: React.FC = () => {
                         <span className="text-xs text-gray-500">
                           {new Date(doc.created_at).toLocaleDateString()}
                         </span>
-                        <a
-                          href={`/api/knowledge/documents/${doc.id}/download`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                          title="下载"
-                        >
-                          <ArrowDownTrayIcon className="w-4 h-4" />
-                        </a>
                         <button
                           onClick={() => handleDeleteDocument(doc)}
                           className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
