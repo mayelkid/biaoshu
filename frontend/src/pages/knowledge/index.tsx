@@ -96,7 +96,7 @@ const KnowledgeBase: React.FC = () => {
     if (!doc.file_path) return '';
     // 文件路径格式: uploads/{user_id}/knowledge/{company_id}/{folder_id}/{file_name}
     // 后端 serve 静态文件时直接使用 uploads 作为根目录
-    return `/uploads/${doc.file_path.replace(/^uploads\//, '')}`;
+    return `${window.location.origin}/uploads/${doc.file_path.replace(/^uploads\//, '')}`;
   };
   
   // 判断文件类型
@@ -703,12 +703,12 @@ const KnowledgeBase: React.FC = () => {
                 />
               </div>
 
-              <div className="flex items-center gap-2">
-                <FolderIcon className="w-5 h-5 text-gray-400" />
+              <div className="relative">
+                <FolderIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value as DocumentCategory | '')}
-                  className="pl-4 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">全部分类</option>
                   {Object.entries(categoryLabels).map(([key, label]) => (

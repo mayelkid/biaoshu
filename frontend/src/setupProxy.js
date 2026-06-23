@@ -13,7 +13,7 @@ module.exports = function(app) {
   app.use(
     '/uploads',
     createProxyMiddleware({
-      target: 'http://localhost:8000',
+      target: 'http://localhost:8000/uploads',
       changeOrigin: true,
     })
   );
