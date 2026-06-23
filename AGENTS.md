@@ -35,8 +35,8 @@ AI 写标书助手是一个前后端集成的 Web 应用，用于辅助用户撰
 │   │   ├── services/        # 服务层
 │   │   └── utils/           # 工具函数
 │   ├── static/               # 静态文件 (前端构建产物)
-│   ├── knowledge_data/       # 知识库数据
 │   └── requirements.txt      # Python 依赖
+│   └── run.py                # Uvicorn 启动脚本
 └── scripts/                  # Coze 脚本
     ├── coze-preview-build.sh  # 预览构建
     ├── coze-preview-run.sh    # 预览运行
@@ -140,7 +140,6 @@ bash scripts/coze-deploy-run.sh
 1. **端口约束**: 
    - 预览端口: 5000
    - 部署端口: 5000
-   - 禁止使用 9000 端口
 
 2. **包管理器约束**:
    - Node.js 项目只使用 `pnpm`
