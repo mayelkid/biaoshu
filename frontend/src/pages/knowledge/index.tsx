@@ -330,17 +330,10 @@ const KnowledgeBase: React.FC = () => {
   // 保存文档
   const handleSaveDocument = async () => {
     // 文本类型需要内容
-    if (documentFormData.documentType === 'text') {
-      if (!documentFormData.content.trim()) {
-        toast.error('请输入文档内容');
-        return;
-      }
-    } else {
-      // 非文本类型需要至少一个文件
-      if (uploadFiles.length === 0) {
-        toast.error('请选择至少一个文件');
-        return;
-      }
+    // 文件上传是必填项，其他字段可为空
+    if (uploadFiles.length === 0) {
+      toast.error('请选择至少一个文件');
+      return;
     }
 
     try {
@@ -353,26 +346,15 @@ const KnowledgeBase: React.FC = () => {
           description: documentFormData.description,
         });
       } else {
-        if (documentFormData.documentType === 'text') {
-          await knowledgeApi.createDocument({
-            title: documentFormData.title,
-            content: documentFormData.content,
-            document_type: 'text',
-            category: documentFormData.category,
-            tags: documentFormData.tags.split(',').map((t) => t.trim()).filter(Boolean),
-            description: documentFormData.description,
-            company_id: selectedCompany?.id,
-          });
-        } else if (uploadFiles.length > 0) {
-          await knowledgeApi.uploadFiles(
-            documentFormData.category,
-            uploadFiles,
-            selectedCompany?.id,
-            documentFormData.description,
-            documentFormData.tags.split(',').map((t) => t.trim()).filter(Boolean),
-            viewingFolder?.id
-          );
-        }
+        // 使用 uploadFiles 上传（文件必填，其他字段可为空）
+        await knowledgeApi.uploadFiles(
+          documentFormData.category,
+          uploadFiles,
+          selectedCompany?.id,
+          documentFormData.description,
+          documentFormData.tags.split(',').map((t) => t.trim()).filter(Boolean),
+          viewingFolder?.id
+        );
       }
 
       closeDocumentModal();
