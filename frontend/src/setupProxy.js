@@ -8,4 +8,13 @@ module.exports = function(app) {
       changeOrigin: true,
     })
   );
+
+  // 代理 /uploads 路径到后端
+  app.use(
+    '/uploads',
+    createProxyMiddleware({
+      target: 'http://localhost:8000',
+      changeOrigin: true,
+    })
+  );
 };
