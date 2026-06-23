@@ -255,7 +255,7 @@ async def download_document(
     
     return FileResponse(
         document.file_path,
-        filename=document.file_name,
+        filename=document.title,
         media_type="application/octet-stream",
     )
 
