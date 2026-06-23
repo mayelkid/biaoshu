@@ -865,38 +865,11 @@ const KnowledgeBase: React.FC = () => {
 
             <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
               <div className="space-y-4">
-                {/* 分类 */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">分类</label>
-                  <select
-                    value={documentFormData.category}
-                    onChange={(e) => setDocumentFormData({ ...documentFormData, category: e.target.value as DocumentCategory })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    {Object.entries(categoryLabels).map(([key, label]) => (
-                      <option key={key} value={key}>
-                        {label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* 描述 */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">描述</label>
-                  <textarea
-                    value={documentFormData.description}
-                    onChange={(e) => setDocumentFormData({ ...documentFormData, description: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
-                    rows={2}
-                    placeholder="简短描述此文档..."
-                  />
-                </div>
 
                 {/* 文件上传（多文件） */}
                 {!editingDoc && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">文件（支持多选）</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">文件（支持批量上传）</label>
                     <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-500 transition-colors">
                       <input
                         type="file"
@@ -938,6 +911,34 @@ const KnowledgeBase: React.FC = () => {
                     />
                   </div>
                 )}
+                
+                {/* 分类 */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">分类</label>
+                  <select
+                    value={documentFormData.category}
+                    onChange={(e) => setDocumentFormData({ ...documentFormData, category: e.target.value as DocumentCategory })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    {Object.entries(categoryLabels).map(([key, label]) => (
+                      <option key={key} value={key}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* 描述 */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">描述</label>
+                  <textarea
+                    value={documentFormData.description}
+                    onChange={(e) => setDocumentFormData({ ...documentFormData, description: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                    rows={2}
+                    placeholder="简短描述此文档..."
+                  />
+                </div>
 
                 {/* 标签 */}
                 <div>

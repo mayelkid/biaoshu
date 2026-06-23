@@ -4018,3 +4018,155 @@ src/pages/task/index.tsx
 
 webpack compiled with 1 warning
 No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/pages/knowledge/index.tsx
+  Line 146:6:  React Hook useEffect has a missing dependency: 'loadCompanies'. Either include it or remove the dependency array                      react-hooks/exhaustive-deps
+  Line 153:6:  React Hook useEffect has missing dependencies: 'loadDocuments' and 'loadFolders'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 163:6:  React Hook useEffect has a missing dependency: 'selectedCompany?.id'. Either include it or remove the dependency array                react-hooks/exhaustive-deps
+
+src/pages/proposal/index.tsx
+  Line 160:9:  'handleContentUpdated' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/task/index.tsx
+  Line 4:17:   'useState' is defined but never used               @typescript-eslint/no-unused-vars
+  Line 4:27:   'useEffect' is defined but never used              @typescript-eslint/no-unused-vars
+  Line 7:103:  'BuildingOfficeIcon' is defined but never used     @typescript-eslint/no-unused-vars
+  Line 15:70:  'refreshTasks' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/pages/knowledge/index.tsx
+  Line 146:6:  React Hook useEffect has a missing dependency: 'loadCompanies'. Either include it or remove the dependency array                      react-hooks/exhaustive-deps
+  Line 153:6:  React Hook useEffect has missing dependencies: 'loadDocuments' and 'loadFolders'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 163:6:  React Hook useEffect has a missing dependency: 'selectedCompany?.id'. Either include it or remove the dependency array                react-hooks/exhaustive-deps
+
+src/pages/proposal/index.tsx
+  Line 160:9:  'handleContentUpdated' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/task/index.tsx
+  Line 4:17:   'useState' is defined but never used               @typescript-eslint/no-unused-vars
+  Line 4:27:   'useEffect' is defined but never used              @typescript-eslint/no-unused-vars
+  Line 7:103:  'BuildingOfficeIcon' is defined but never used     @typescript-eslint/no-unused-vars
+  Line 15:70:  'refreshTasks' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/pages/knowledge/index.tsx
+  Line 146:6:  React Hook useEffect has a missing dependency: 'loadCompanies'. Either include it or remove the dependency array                      react-hooks/exhaustive-deps
+  Line 153:6:  React Hook useEffect has missing dependencies: 'loadDocuments' and 'loadFolders'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 163:6:  React Hook useEffect has a missing dependency: 'selectedCompany?.id'. Either include it or remove the dependency array                react-hooks/exhaustive-deps
+
+src/pages/proposal/index.tsx
+  Line 160:9:  'handleContentUpdated' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/task/index.tsx
+  Line 4:17:   'useState' is defined but never used               @typescript-eslint/no-unused-vars
+  Line 4:27:   'useEffect' is defined but never used              @typescript-eslint/no-unused-vars
+  Line 7:103:  'BuildingOfficeIcon' is defined but never used     @typescript-eslint/no-unused-vars
+  Line 15:70:  'refreshTasks' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/pages/knowledge/index.tsx
+  Line 146:6:  React Hook useEffect has a missing dependency: 'loadCompanies'. Either include it or remove the dependency array                      react-hooks/exhaustive-deps
+  Line 153:6:  React Hook useEffect has missing dependencies: 'loadDocuments' and 'loadFolders'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 163:6:  React Hook useEffect has a missing dependency: 'selectedCompany?.id'. Either include it or remove the dependency array                react-hooks/exhaustive-deps
+
+src/pages/proposal/index.tsx
+  Line 160:9:  'handleContentUpdated' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/task/index.tsx
+  Line 4:17:   'useState' is defined but never used               @typescript-eslint/no-unused-vars
+  Line 4:27:   'useEffect' is defined but never used              @typescript-eslint/no-unused-vars
+  Line 7:103:  'BuildingOfficeIcon' is defined but never used     @typescript-eslint/no-unused-vars
+  Line 15:70:  'refreshTasks' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/pages/knowledge/index.tsx
+  Line 146:6:  React Hook useEffect has a missing dependency: 'loadCompanies'. Either include it or remove the dependency array                      react-hooks/exhaustive-deps
+  Line 153:6:  React Hook useEffect has missing dependencies: 'loadDocuments' and 'loadFolders'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 163:6:  React Hook useEffect has a missing dependency: 'selectedCompany?.id'. Either include it or remove the dependency array                react-hooks/exhaustive-deps
+
+src/pages/proposal/index.tsx
+  Line 160:9:  'handleContentUpdated' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/task/index.tsx
+  Line 4:17:   'useState' is defined but never used               @typescript-eslint/no-unused-vars
+  Line 4:27:   'useEffect' is defined but never used              @typescript-eslint/no-unused-vars
+  Line 7:103:  'BuildingOfficeIcon' is defined but never used     @typescript-eslint/no-unused-vars
+  Line 15:70:  'refreshTasks' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/pages/knowledge/index.tsx
+  Line 146:6:  React Hook useEffect has a missing dependency: 'loadCompanies'. Either include it or remove the dependency array                      react-hooks/exhaustive-deps
+  Line 153:6:  React Hook useEffect has missing dependencies: 'loadDocuments' and 'loadFolders'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 163:6:  React Hook useEffect has a missing dependency: 'selectedCompany?.id'. Either include it or remove the dependency array                react-hooks/exhaustive-deps
+
+src/pages/proposal/index.tsx
+  Line 160:9:  'handleContentUpdated' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/task/index.tsx
+  Line 4:17:   'useState' is defined but never used               @typescript-eslint/no-unused-vars
+  Line 4:27:   'useEffect' is defined but never used              @typescript-eslint/no-unused-vars
+  Line 7:103:  'BuildingOfficeIcon' is defined but never used     @typescript-eslint/no-unused-vars
+  Line 15:70:  'refreshTasks' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+No issues found.
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/pages/knowledge/index.tsx
+  Line 146:6:  React Hook useEffect has a missing dependency: 'loadCompanies'. Either include it or remove the dependency array                      react-hooks/exhaustive-deps
+  Line 153:6:  React Hook useEffect has missing dependencies: 'loadDocuments' and 'loadFolders'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 163:6:  React Hook useEffect has a missing dependency: 'selectedCompany?.id'. Either include it or remove the dependency array                react-hooks/exhaustive-deps
+
+src/pages/proposal/index.tsx
+  Line 160:9:  'handleContentUpdated' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/task/index.tsx
+  Line 4:17:   'useState' is defined but never used               @typescript-eslint/no-unused-vars
+  Line 4:27:   'useEffect' is defined but never used              @typescript-eslint/no-unused-vars
+  Line 7:103:  'BuildingOfficeIcon' is defined but never used     @typescript-eslint/no-unused-vars
+  Line 15:70:  'refreshTasks' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/pages/knowledge/index.tsx
+  Line 146:6:  React Hook useEffect has a missing dependency: 'loadCompanies'. Either include it or remove the dependency array                      react-hooks/exhaustive-deps
+  Line 153:6:  React Hook useEffect has missing dependencies: 'loadDocuments' and 'loadFolders'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 163:6:  React Hook useEffect has a missing dependency: 'selectedCompany?.id'. Either include it or remove the dependency array                react-hooks/exhaustive-deps
+
+src/pages/proposal/index.tsx
+  Line 160:9:  'handleContentUpdated' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/task/index.tsx
+  Line 4:17:   'useState' is defined but never used               @typescript-eslint/no-unused-vars
+  Line 4:27:   'useEffect' is defined but never used              @typescript-eslint/no-unused-vars
+  Line 7:103:  'BuildingOfficeIcon' is defined but never used     @typescript-eslint/no-unused-vars
+  Line 15:70:  'refreshTasks' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+No issues found.
