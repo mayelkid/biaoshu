@@ -46,7 +46,6 @@ const KnowledgeBase: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [keyword, setKeyword] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<DocumentCategory | ''>('');
-  const [currentFolder, setCurrentFolder] = useState<Folder | null>(null); // 当前查看的文件夹
 
   // 企业弹窗
   const [showCompanyModal, setShowCompanyModal] = useState(false);
@@ -72,6 +71,11 @@ const KnowledgeBase: React.FC = () => {
   // 文件夹弹窗
   const [showFolderModal, setShowFolderModal] = useState(false);
   const [folderName, setFolderName] = useState('');
+  
+  // 文件夹内容弹窗
+  const [showFolderContentsModal, setShowFolderContentsModal] = useState(false);
+  const [viewingFolder, setViewingFolder] = useState<Folder | null>(null);
+  const [folderDocuments, setFolderDocuments] = useState<KnowledgeDocument[]>([]);
   
   const companiesLoadedRef = useRef(false);
 
@@ -108,8 +112,7 @@ const KnowledgeBase: React.FC = () => {
       const response = await knowledgeApi.listDocuments(
         keyword || undefined,
         selectedCategory || undefined,
-        selectedCompany.id,
-        currentFolder?.id
+        selectedCompany.id
       );
       if (response.success) {
         setDocuments(response.documents);
@@ -147,14 +150,7 @@ const KnowledgeBase: React.FC = () => {
       loadDocuments();
       loadFolders();
     }
-  }, [keyword, selectedCategory, selectedCompany, currentFolder]);
-
-  // 当进入文件夹时，不加载文件夹列表
-  useEffect(() => {
-    if (selectedCompany && currentFolder) {
-      loadDocuments();
-    }
-  }, [currentFolder]);
+  }, [keyword, selectedCategory, selectedCompany]);
 
   useEffect(() => {
     if (companyId && companies.length > 0) {
@@ -249,22 +245,31 @@ const KnowledgeBase: React.FC = () => {
   // 返回企业列表
   const backToCompanyList = () => {
     setSelectedCompany(null);
-    setCurrentFolder(null);
     setViewMode('company-list');
     navigate('/knowledge');
   };
 
-  // 返回企业详情（从文件夹返回）
-  const backToCompanyDetail = () => {
-    setCurrentFolder(null);
-    loadDocuments();
-    loadFolders();
-  };
-
   // 进入文件夹
-  const enterFolder = (folder: Folder) => {
-    setCurrentFolder(folder);
-    loadDocuments();
+  // 点击文件夹打开弹窗显示内容
+  const enterFolder = async (folder: Folder) => {
+    setViewingFolder(folder);
+    setShowFolderContentsModal(true);
+    
+    // 加载文件夹内资料
+    setLoading(true);
+    try {
+      const response = await knowledgeApi.listDocuments({
+        companyId: selectedCompany!.id,
+        folderId: folder.id,
+      });
+      if (response.success) {
+        setFolderDocuments(response.documents);
+      }
+    } catch (error) {
+      console.error('加载文件夹内容失败:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // 获取文档图标
@@ -350,7 +355,7 @@ const KnowledgeBase: React.FC = () => {
             selectedCompany?.id,
             documentFormData.description,
             documentFormData.tags.split(',').map((t) => t.trim()).filter(Boolean),
-            currentFolder?.id
+            viewingFolder?.id
           );
         }
       }
@@ -562,24 +567,17 @@ const KnowledgeBase: React.FC = () => {
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-4">
                 <button
-                  onClick={currentFolder ? backToCompanyDetail : backToCompanyList}
+                  onClick={backToCompanyList}
                   className="flex items-center gap-1 text-gray-600 hover:text-gray-900 transition-colors"
                 >
                   <ChevronLeftIcon className="w-5 h-5" />
                   返回
                 </button>
                 <div className="h-6 w-px bg-gray-300" />
-                {currentFolder ? (
-                  <div className="flex items-center gap-2">
-                    <FolderIcon className="w-6 h-6 text-amber-600" />
-                    <h2 className="text-xl font-semibold text-gray-900">{currentFolder.name}</h2>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <BuildingOfficeIcon className="w-6 h-6 text-blue-600" />
-                    <h2 className="text-xl font-semibold text-gray-900">{selectedCompany.name}</h2>
-                  </div>
-                )}
+                <div className="flex items-center gap-2">
+                  <BuildingOfficeIcon className="w-6 h-6 text-blue-600" />
+                  <h2 className="text-xl font-semibold text-gray-900">{selectedCompany.name}</h2>
+                </div>
                 <span className="text-sm text-gray-500">共 {documents.length} 份资料</span>
               </div>
               
@@ -968,6 +966,96 @@ const KnowledgeBase: React.FC = () => {
                 <FolderIcon className="w-4 h-4" />
                 {editingDoc ? '保存修改' : '确定上传'}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 文件夹内容弹窗 */}
+      {showFolderContentsModal && viewingFolder && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[80vh] flex flex-col">
+            <div className="flex items-center justify-between p-4 border-b">
+              <div className="flex items-center gap-2">
+                <FolderIcon className="w-6 h-6 text-amber-600" />
+                <h3 className="text-lg font-semibold text-gray-900">{viewingFolder.name}</h3>
+              </div>
+              <button
+                onClick={() => {
+                  setShowFolderContentsModal(false);
+                  setViewingFolder(null);
+                  setFolderDocuments([]);
+                }}
+                className="p-1 hover:bg-gray-100 rounded transition-colors"
+              >
+                <XMarkIcon className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* 操作栏 */}
+            <div className="p-4 border-b flex items-center justify-between">
+              <span className="text-sm text-gray-500">共 {folderDocuments.length} 份资料</span>
+              <button
+                onClick={() => {
+                  openDocumentModal();
+                }}
+                className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                <ArrowUpTrayIcon className="w-5 h-5" />
+                上传资料
+              </button>
+            </div>
+
+            {/* 资料列表 */}
+            <div className="flex-1 overflow-auto p-4">
+              {loading ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                </div>
+              ) : folderDocuments.length === 0 ? (
+                <div className="text-center py-12 text-gray-500">
+                  <FolderIcon className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                  <p>文件夹内暂无资料</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {folderDocuments.map((doc) => (
+                    <div
+                      key={doc.id}
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                    >
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        {getDocumentIcon(doc.document_type)}
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-gray-900 truncate">{doc.title}</p>
+                          <p className="text-sm text-gray-500">{doc.file_name || '文本内容'}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 ml-4">
+                        <span className="text-xs text-gray-500">
+                          {new Date(doc.created_at).toLocaleDateString()}
+                        </span>
+                        <a
+                          href={`/api/knowledge/documents/${doc.id}/download`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                          title="下载"
+                        >
+                          <ArrowDownTrayIcon className="w-4 h-4" />
+                        </a>
+                        <button
+                          onClick={() => handleDeleteDocument(doc)}
+                          className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                          title="删除"
+                        >
+                          <TrashIcon className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
