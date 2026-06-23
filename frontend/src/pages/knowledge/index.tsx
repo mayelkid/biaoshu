@@ -508,7 +508,7 @@ const KnowledgeBase: React.FC = () => {
           loadDocuments();
           // 如果是在文件夹弹窗中删除，刷新文件夹内文档
           if (viewingFolder) {
-            const response = await knowledgeApi.listDocuments(viewingFolder.id);
+            const response = await knowledgeApi.listDocuments(undefined, undefined, selectedCompany?.id, viewingFolder.id);
             setFolderDocuments(response.documents || []);
           }
           // 刷新文件夹列表（更新资料数量）
