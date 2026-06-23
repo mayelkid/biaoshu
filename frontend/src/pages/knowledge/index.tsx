@@ -122,8 +122,27 @@ const KnowledgeBase: React.FC = () => {
 
   // 查看解析详情
   const handleViewParseDetail = async (doc: KnowledgeDocument) => {
+    // 如果没有摘要，先触发解析
+    if (!doc.summary) {
+      await handleTriggerParse(doc);
+      return;
+    }
     setParseDetailDoc(doc);
     setShowParseDetailModal(true);
+  };
+
+  // 主动触发解析
+  const handleTriggerParse = async (doc: KnowledgeDocument) => {
+    if (!window.confirm(`确定要对"${doc.title}"发起 AI 解析吗？`)) return;
+    
+    try {
+      await knowledgeApi.parseDocument(doc.id);
+      toast.success('解析任务已提交');
+      // 刷新文档列表
+      loadDocuments();
+    } catch (error) {
+      toast.error('解析失败');
+    }
   };
 
   const companiesLoadedRef = useRef(false);
