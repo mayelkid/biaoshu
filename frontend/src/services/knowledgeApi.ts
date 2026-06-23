@@ -12,6 +12,7 @@ export interface Company {
   id: string;
   name: string;
   description?: string;
+  summary?: string;  // AI 解析摘要
   user_id: string;
   created_at: string;
   updated_at: string;
@@ -51,8 +52,20 @@ export interface KnowledgeDocument {
   user_id: string;
   company_id?: string;
   folder_id?: string;
+  summary?: string;  // AI 解析的文档摘要
   created_at: string;
   updated_at: string;
+}
+
+export interface DocumentSummary {
+  id: string;
+  document_id: string;
+  company_id?: string;
+  summary: string;
+  key_points: string[];
+  keywords: string[];
+  processed_at?: string;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
 }
 
 export interface CreateDocumentRequest {
@@ -355,6 +368,38 @@ export const knowledgeApi = {
       return response.data;
     } catch (error) {
       throw new Error(getErrorMessage(error, '删除文件夹失败'));
+    }
+  },
+
+  // 解析文档（触发 AI 解析）
+  async parseDocument(documentId: string): Promise<{ message: string }> {
+    try {
+      const response = await axios.post(`/api/knowledge/documents/${documentId}/parse`);
+      return response.data;
+    } catch (error) {
+      throw new Error(getErrorMessage(error, '解析文档失败'));
+    }
+  },
+
+  // 获取文档摘要
+  async getDocumentSummary(documentId: string): Promise<DocumentSummary | null> {
+    try {
+      const response = await axios.get(`/api/knowledge/documents/${documentId}/summary`);
+      return response.data;
+    } catch (error) {
+      return null;
+    }
+  },
+
+  // 批量获取文档摘要
+  async getDocumentSummaries(documentIds: string[]): Promise<DocumentSummary[]> {
+    try {
+      const response = await axios.post('/api/knowledge/documents/summaries/batch', {
+        document_ids: documentIds
+      });
+      return response.data.summaries || [];
+    } catch (error) {
+      return [];
     }
   },
 };

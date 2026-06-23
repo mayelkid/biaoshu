@@ -28,6 +28,7 @@ from app.models.knowledge_schema import (
 )
 from app.services.knowledge_service import get_knowledge_service, KnowledgeService
 from app.services.auth_service import get_auth_service, AuthService
+from app.services.document_parser_service import document_parser_service
 from app.config import settings
 
 router = APIRouter(prefix="/api/knowledge", tags=["知识库"])
@@ -313,3 +314,48 @@ async def delete_folder(
         raise HTTPException(status_code=404, detail="文件夹不存在")
     
     return DeleteResponse(success=True, message="删除成功")
+
+
+# 文档解析相关 API
+from app.services.document_parser_service import DocumentParserService, get_document_parser_service
+from app.models.document_summary import DocumentSummaryResponse
+
+@router.post("/documents/{document_id}/parse", response_model=DocumentSummaryResponse)
+async def parse_document(
+    document_id: str,
+    user_id: str = Depends(get_current_user_id),
+    knowledge_service: KnowledgeService = Depends(get_knowledge_service),
+    parser_service: DocumentParserService = Depends(get_document_parser_service),
+):
+    """解析文档内容，提取摘要和关键信息"""
+    # 获取文档信息
+    documents = knowledge_service.search_documents(user_id, "", "", None)
+    doc = None
+    for d in documents:
+        if d.id == document_id:
+            doc = d
+            break
+    
+    if not doc:
+        raise HTTPException(status_code=404, detail="文档不存在")
+    
+    # 解析文档
+    summary = await parser_service.parse_document(document_id)
+    if not summary:
+        raise HTTPException(status_code=500, detail="文档解析失败")
+    
+    return summary
+
+
+@router.get("/documents/{document_id}/summary", response_model=DocumentSummaryResponse)
+async def get_document_summary(
+    document_id: str,
+    user_id: str = Depends(get_current_user_id),
+    parser_service: DocumentParserService = Depends(get_document_parser_service),
+):
+    """获取文档摘要"""
+    summary = parser_service.get_summary(document_id)
+    if not summary:
+        raise HTTPException(status_code=404, detail="文档摘要不存在")
+    
+    return summary

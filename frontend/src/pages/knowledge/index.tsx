@@ -413,6 +413,29 @@ const KnowledgeBase: React.FC = () => {
         }
       }
       toast.success(editingDoc ? '更新成功' : '上传成功');
+      // 上传成功后自动触发文档解析
+      if (!editingDoc && uploadFiles.length > 0) {
+        // 获取上传的文档 ID 并触发解析（需要等待后端返回文档 ID）
+        // 这里通过刷新列表后获取最新文档来触发解析
+        setTimeout(async () => {
+          try {
+            const response = await knowledgeApi.listDocuments(
+              undefined,
+              undefined,
+              selectedCompany?.id,
+              viewingFolder?.id
+            );
+            if (response.success && response.documents.length > 0) {
+              // 找到最新上传的文档并触发解析
+              const latestDoc = response.documents[0];
+              await knowledgeApi.parseDocument(latestDoc.id);
+              toast.success('文档解析完成');
+            }
+          } catch (e) {
+            // 静默处理
+          }
+        }, 1000);
+      }
       // 上传成功后刷新文件夹列表（更新资料数量）
       if (selectedCompany) {
         const response = await knowledgeApi.listFolders(selectedCompany.id);
@@ -878,6 +901,12 @@ const KnowledgeBase: React.FC = () => {
                     )}
 
 
+                    {doc.summary && (
+                      <p className="text-sm text-blue-600 mt-2 italic line-clamp-2 bg-blue-50 p-2 rounded">
+                        AI摘要：{doc.summary}
+                      </p>
+                    )}
+
                     <div className="mt-3 pt-3 border-t border-gray-100 text-xs text-gray-400">
                       更新于 {formatTime(doc.updated_at)}
                     </div>
@@ -1214,6 +1243,12 @@ const KnowledgeBase: React.FC = () => {
                             <span className="text-xs text-gray-400">+{doc.tags.length - 3}</span>
                           )}
                         </div>
+                      )}
+
+                      {doc.summary && (
+                        <p className="text-sm text-blue-600 mt-2 italic line-clamp-2 bg-blue-50 p-2 rounded">
+                          AI摘要：{doc.summary}
+                        </p>
                       )}
 
                       <div className="mt-3 pt-3 border-t border-gray-100 text-xs text-gray-400">
