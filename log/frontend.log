@@ -3441,3 +3441,580 @@ TS2345: Argument of type '{ companyId: string; folderId: string; }' is not assig
     266 |         setFolderDocuments(response.documents);
     267 |       }
 
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/pages/knowledge/index.tsx
+  Line 146:6:  React Hook useEffect has a missing dependency: 'loadCompanies'. Either include it or remove the dependency array                      react-hooks/exhaustive-deps
+  Line 153:6:  React Hook useEffect has missing dependencies: 'loadDocuments' and 'loadFolders'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 163:6:  React Hook useEffect has a missing dependency: 'selectedCompany?.id'. Either include it or remove the dependency array                react-hooks/exhaustive-deps
+
+src/pages/proposal/index.tsx
+  Line 160:9:  'handleContentUpdated' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/task/index.tsx
+  Line 4:17:   'useState' is defined but never used               @typescript-eslint/no-unused-vars
+  Line 4:27:   'useEffect' is defined but never used              @typescript-eslint/no-unused-vars
+  Line 7:103:  'BuildingOfficeIcon' is defined but never used     @typescript-eslint/no-unused-vars
+  Line 15:70:  'refreshTasks' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/pages/knowledge/index.tsx
+  Line 146:6:  React Hook useEffect has a missing dependency: 'loadCompanies'. Either include it or remove the dependency array                      react-hooks/exhaustive-deps
+  Line 153:6:  React Hook useEffect has missing dependencies: 'loadDocuments' and 'loadFolders'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 163:6:  React Hook useEffect has a missing dependency: 'selectedCompany?.id'. Either include it or remove the dependency array                react-hooks/exhaustive-deps
+
+src/pages/proposal/index.tsx
+  Line 160:9:  'handleContentUpdated' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/task/index.tsx
+  Line 4:17:   'useState' is defined but never used               @typescript-eslint/no-unused-vars
+  Line 4:27:   'useEffect' is defined but never used              @typescript-eslint/no-unused-vars
+  Line 7:103:  'BuildingOfficeIcon' is defined but never used     @typescript-eslint/no-unused-vars
+  Line 15:70:  'refreshTasks' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+ERROR in src/pages/knowledge/index.tsx:261:57
+TS2345: Argument of type '{ companyId: string; folderId: string; }' is not assignable to parameter of type 'string'.
+    259 |     setLoading(true);
+    260 |     try {
+  > 261 |       const response = await knowledgeApi.listDocuments({
+        |                                                         ^
+  > 262 |         companyId: selectedCompany!.id,
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 263 |         folderId: folder.id,
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 264 |       });
+        | ^^^^^^^^
+    265 |       if (response.success) {
+    266 |         setFolderDocuments(response.documents);
+    267 |       }
+
+ERROR in src/pages/knowledge/index.tsx:884:27
+TS2552: Cannot find name 'setUploadFiles'. Did you mean 'setUploadFile'?
+    882 |                         onChange={(e) => {
+    883 |                           const files = e.target.files ? Array.from(e.target.files) : [];
+  > 884 |                           setUploadFiles(files);
+        |                           ^^^^^^^^^^^^^^
+    885 |                         }}
+    886 |                         className="hidden"
+    887 |                         id="file-upload"
+
+ERROR in src/pages/knowledge/index.tsx:895:24
+TS2552: Cannot find name 'uploadFiles'. Did you mean 'uploadFile'?
+    893 |                         <p className="text-xs text-gray-400 mt-1">支持 PDF、Word、Excel、图片等格式，可多选</p>
+    894 |                       </label>
+  > 895 |                       {uploadFiles.length > 0 && (
+        |                        ^^^^^^^^^^^
+    896 |                         <div className="mt-3 space-y-1">
+    897 |                           {uploadFiles.map((file, index) => (
+    898 |                             <p key={index} className="text-blue-600 text-sm truncate">{file.name}</p>
+
+ERROR in src/pages/knowledge/index.tsx:897:28
+TS2552: Cannot find name 'uploadFiles'. Did you mean 'uploadFile'?
+    895 |                       {uploadFiles.length > 0 && (
+    896 |                         <div className="mt-3 space-y-1">
+  > 897 |                           {uploadFiles.map((file, index) => (
+        |                            ^^^^^^^^^^^
+    898 |                             <p key={index} className="text-blue-600 text-sm truncate">{file.name}</p>
+    899 |                           ))}
+    900 |                         </div>
+
+ERROR in src/pages/knowledge/index.tsx:897:45
+TS7006: Parameter 'file' implicitly has an 'any' type.
+    895 |                       {uploadFiles.length > 0 && (
+    896 |                         <div className="mt-3 space-y-1">
+  > 897 |                           {uploadFiles.map((file, index) => (
+        |                                             ^^^^
+    898 |                             <p key={index} className="text-blue-600 text-sm truncate">{file.name}</p>
+    899 |                           ))}
+    900 |                         </div>
+
+ERROR in src/pages/knowledge/index.tsx:897:51
+TS7006: Parameter 'index' implicitly has an 'any' type.
+    895 |                       {uploadFiles.length > 0 && (
+    896 |                         <div className="mt-3 space-y-1">
+  > 897 |                           {uploadFiles.map((file, index) => (
+        |                                                   ^^^^^
+    898 |                             <p key={index} className="text-blue-600 text-sm truncate">{file.name}</p>
+    899 |                           ))}
+    900 |                         </div>
+
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/pages/knowledge/index.tsx
+  Line 146:6:  React Hook useEffect has a missing dependency: 'loadCompanies'. Either include it or remove the dependency array                      react-hooks/exhaustive-deps
+  Line 153:6:  React Hook useEffect has missing dependencies: 'loadDocuments' and 'loadFolders'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 163:6:  React Hook useEffect has a missing dependency: 'selectedCompany?.id'. Either include it or remove the dependency array                react-hooks/exhaustive-deps
+
+src/pages/proposal/index.tsx
+  Line 160:9:  'handleContentUpdated' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/task/index.tsx
+  Line 4:17:   'useState' is defined but never used               @typescript-eslint/no-unused-vars
+  Line 4:27:   'useEffect' is defined but never used              @typescript-eslint/no-unused-vars
+  Line 7:103:  'BuildingOfficeIcon' is defined but never used     @typescript-eslint/no-unused-vars
+  Line 15:70:  'refreshTasks' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/pages/knowledge/index.tsx
+  Line 146:6:  React Hook useEffect has a missing dependency: 'loadCompanies'. Either include it or remove the dependency array                      react-hooks/exhaustive-deps
+  Line 153:6:  React Hook useEffect has missing dependencies: 'loadDocuments' and 'loadFolders'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 163:6:  React Hook useEffect has a missing dependency: 'selectedCompany?.id'. Either include it or remove the dependency array                react-hooks/exhaustive-deps
+
+src/pages/proposal/index.tsx
+  Line 160:9:  'handleContentUpdated' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/task/index.tsx
+  Line 4:17:   'useState' is defined but never used               @typescript-eslint/no-unused-vars
+  Line 4:27:   'useEffect' is defined but never used              @typescript-eslint/no-unused-vars
+  Line 7:103:  'BuildingOfficeIcon' is defined but never used     @typescript-eslint/no-unused-vars
+  Line 15:70:  'refreshTasks' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+ERROR in src/pages/knowledge/index.tsx:261:57
+TS2345: Argument of type '{ companyId: string; folderId: string; }' is not assignable to parameter of type 'string'.
+    259 |     setLoading(true);
+    260 |     try {
+  > 261 |       const response = await knowledgeApi.listDocuments({
+        |                                                         ^
+  > 262 |         companyId: selectedCompany!.id,
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 263 |         folderId: folder.id,
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 264 |       });
+        | ^^^^^^^^
+    265 |       if (response.success) {
+    266 |         setFolderDocuments(response.documents);
+    267 |       }
+
+ERROR in src/pages/knowledge/index.tsx:311:7
+TS2552: Cannot find name 'setUploadFile'. Did you mean 'setUploadFiles'?
+    309 |         description: '',
+    310 |       });
+  > 311 |       setUploadFile(null);
+        |       ^^^^^^^^^^^^^
+    312 |     }
+    313 |     setShowDocumentModal(true);
+    314 |   };
+
+ERROR in src/pages/knowledge/index.tsx:320:5
+TS2552: Cannot find name 'setUploadFile'. Did you mean 'setUploadFiles'?
+    318 |     setShowDocumentModal(false);
+    319 |     setEditingDoc(null);
+  > 320 |     setUploadFile(null);
+        |     ^^^^^^^^^^^^^
+    321 |   };
+    322 |
+    323 |   // 保存文档
+
+ERROR in src/pages/knowledge/index.tsx:350:20
+TS2552: Cannot find name 'uploadFile'. Did you mean 'uploadFiles'?
+    348 |             company_id: selectedCompany?.id,
+    349 |           });
+  > 350 |         } else if (uploadFile) {
+        |                    ^^^^^^^^^^
+    351 |           await knowledgeApi.uploadFile(
+    352 |             documentFormData.title,
+    353 |             documentFormData.category,
+
+ERROR in src/pages/knowledge/index.tsx:354:13
+TS2552: Cannot find name 'uploadFile'. Did you mean 'uploadFiles'?
+    352 |             documentFormData.title,
+    353 |             documentFormData.category,
+  > 354 |             uploadFile,
+        |             ^^^^^^^^^^
+    355 |             selectedCompany?.id,
+    356 |             documentFormData.description,
+    357 |             documentFormData.tags.split(',').map((t) => t.trim()).filter(Boolean),
+
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/pages/knowledge/index.tsx
+  Line 146:6:  React Hook useEffect has a missing dependency: 'loadCompanies'. Either include it or remove the dependency array                      react-hooks/exhaustive-deps
+  Line 153:6:  React Hook useEffect has missing dependencies: 'loadDocuments' and 'loadFolders'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 163:6:  React Hook useEffect has a missing dependency: 'selectedCompany?.id'. Either include it or remove the dependency array                react-hooks/exhaustive-deps
+
+src/pages/proposal/index.tsx
+  Line 160:9:  'handleContentUpdated' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/task/index.tsx
+  Line 4:17:   'useState' is defined but never used               @typescript-eslint/no-unused-vars
+  Line 4:27:   'useEffect' is defined but never used              @typescript-eslint/no-unused-vars
+  Line 7:103:  'BuildingOfficeIcon' is defined but never used     @typescript-eslint/no-unused-vars
+  Line 15:70:  'refreshTasks' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/pages/knowledge/index.tsx
+  Line 146:6:  React Hook useEffect has a missing dependency: 'loadCompanies'. Either include it or remove the dependency array                      react-hooks/exhaustive-deps
+  Line 153:6:  React Hook useEffect has missing dependencies: 'loadDocuments' and 'loadFolders'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 163:6:  React Hook useEffect has a missing dependency: 'selectedCompany?.id'. Either include it or remove the dependency array                react-hooks/exhaustive-deps
+
+src/pages/proposal/index.tsx
+  Line 160:9:  'handleContentUpdated' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/task/index.tsx
+  Line 4:17:   'useState' is defined but never used               @typescript-eslint/no-unused-vars
+  Line 4:27:   'useEffect' is defined but never used              @typescript-eslint/no-unused-vars
+  Line 7:103:  'BuildingOfficeIcon' is defined but never used     @typescript-eslint/no-unused-vars
+  Line 15:70:  'refreshTasks' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+ERROR in src/pages/knowledge/index.tsx:261:57
+TS2345: Argument of type '{ companyId: string; folderId: string; }' is not assignable to parameter of type 'string'.
+    259 |     setLoading(true);
+    260 |     try {
+  > 261 |       const response = await knowledgeApi.listDocuments({
+        |                                                         ^
+  > 262 |         companyId: selectedCompany!.id,
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 263 |         folderId: folder.id,
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 264 |       });
+        | ^^^^^^^^
+    265 |       if (response.success) {
+    266 |         setFolderDocuments(response.documents);
+    267 |       }
+
+ERROR in src/pages/knowledge/index.tsx:311:7
+TS2552: Cannot find name 'setUploadFile'. Did you mean 'setUploadFiles'?
+    309 |         description: '',
+    310 |       });
+  > 311 |       setUploadFile(null);
+        |       ^^^^^^^^^^^^^
+    312 |     }
+    313 |     setShowDocumentModal(true);
+    314 |   };
+
+ERROR in src/pages/knowledge/index.tsx:350:20
+TS2552: Cannot find name 'uploadFile'. Did you mean 'uploadFiles'?
+    348 |             company_id: selectedCompany?.id,
+    349 |           });
+  > 350 |         } else if (uploadFile) {
+        |                    ^^^^^^^^^^
+    351 |           await knowledgeApi.uploadFile(
+    352 |             documentFormData.title,
+    353 |             documentFormData.category,
+
+ERROR in src/pages/knowledge/index.tsx:354:13
+TS2552: Cannot find name 'uploadFile'. Did you mean 'uploadFiles'?
+    352 |             documentFormData.title,
+    353 |             documentFormData.category,
+  > 354 |             uploadFile,
+        |             ^^^^^^^^^^
+    355 |             selectedCompany?.id,
+    356 |             documentFormData.description,
+    357 |             documentFormData.tags.split(',').map((t) => t.trim()).filter(Boolean),
+
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/pages/knowledge/index.tsx
+  Line 146:6:  React Hook useEffect has a missing dependency: 'loadCompanies'. Either include it or remove the dependency array                      react-hooks/exhaustive-deps
+  Line 153:6:  React Hook useEffect has missing dependencies: 'loadDocuments' and 'loadFolders'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 163:6:  React Hook useEffect has a missing dependency: 'selectedCompany?.id'. Either include it or remove the dependency array                react-hooks/exhaustive-deps
+
+src/pages/proposal/index.tsx
+  Line 160:9:  'handleContentUpdated' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/task/index.tsx
+  Line 4:17:   'useState' is defined but never used               @typescript-eslint/no-unused-vars
+  Line 4:27:   'useEffect' is defined but never used              @typescript-eslint/no-unused-vars
+  Line 7:103:  'BuildingOfficeIcon' is defined but never used     @typescript-eslint/no-unused-vars
+  Line 15:70:  'refreshTasks' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/pages/knowledge/index.tsx
+  Line 146:6:  React Hook useEffect has a missing dependency: 'loadCompanies'. Either include it or remove the dependency array                      react-hooks/exhaustive-deps
+  Line 153:6:  React Hook useEffect has missing dependencies: 'loadDocuments' and 'loadFolders'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 163:6:  React Hook useEffect has a missing dependency: 'selectedCompany?.id'. Either include it or remove the dependency array                react-hooks/exhaustive-deps
+
+src/pages/proposal/index.tsx
+  Line 160:9:  'handleContentUpdated' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/task/index.tsx
+  Line 4:17:   'useState' is defined but never used               @typescript-eslint/no-unused-vars
+  Line 4:27:   'useEffect' is defined but never used              @typescript-eslint/no-unused-vars
+  Line 7:103:  'BuildingOfficeIcon' is defined but never used     @typescript-eslint/no-unused-vars
+  Line 15:70:  'refreshTasks' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+ERROR in src/pages/knowledge/index.tsx:261:57
+TS2345: Argument of type '{ companyId: string; folderId: string; }' is not assignable to parameter of type 'string'.
+    259 |     setLoading(true);
+    260 |     try {
+  > 261 |       const response = await knowledgeApi.listDocuments({
+        |                                                         ^
+  > 262 |         companyId: selectedCompany!.id,
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 263 |         folderId: folder.id,
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 264 |       });
+        | ^^^^^^^^
+    265 |       if (response.success) {
+    266 |         setFolderDocuments(response.documents);
+    267 |       }
+
+ERROR in src/pages/knowledge/index.tsx:311:7
+TS2552: Cannot find name 'setUploadFile'. Did you mean 'setUploadFiles'?
+    309 |         description: '',
+    310 |       });
+  > 311 |       setUploadFile(null);
+        |       ^^^^^^^^^^^^^
+    312 |     }
+    313 |     setShowDocumentModal(true);
+    314 |   };
+
+ERROR in src/pages/knowledge/index.tsx:360:30
+TS2551: Property 'uploadFiles' does not exist on type '{ listCompanies(): Promise<CompanyListResponse>; getCompany(companyId: string): Promise<CompanyResponse>; createCompany(request: CreateCompanyRequest): Promise<...>; ... 11 more ...; deleteFolder(folderId: string): Promise<...>; }'. Did you mean 'uploadFile'?
+    358 |           });
+    359 |         } else if (uploadFiles.length > 0) {
+  > 360 |           await knowledgeApi.uploadFiles(
+        |                              ^^^^^^^^^^^
+    361 |             documentFormData.category,
+    362 |             uploadFiles,
+    363 |             selectedCompany?.id,
+
+ERROR in src/pages/knowledge/index.tsx:374:9
+TS2552: Cannot find name 'loadFolderDocuments'. Did you mean 'folderDocuments'?
+    372 |       loadDocuments();
+    373 |       if (viewingFolder) {
+  > 374 |         loadFolderDocuments(viewingFolder.id);
+        |         ^^^^^^^^^^^^^^^^^^^
+    375 |       }
+    376 |       toast.success(editingDoc ? '更新成功' : '上传成功');
+    377 |     } catch (error) {
+
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/pages/knowledge/index.tsx
+  Line 146:6:  React Hook useEffect has a missing dependency: 'loadCompanies'. Either include it or remove the dependency array                      react-hooks/exhaustive-deps
+  Line 153:6:  React Hook useEffect has missing dependencies: 'loadDocuments' and 'loadFolders'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 163:6:  React Hook useEffect has a missing dependency: 'selectedCompany?.id'. Either include it or remove the dependency array                react-hooks/exhaustive-deps
+
+src/pages/proposal/index.tsx
+  Line 160:9:  'handleContentUpdated' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/task/index.tsx
+  Line 4:17:   'useState' is defined but never used               @typescript-eslint/no-unused-vars
+  Line 4:27:   'useEffect' is defined but never used              @typescript-eslint/no-unused-vars
+  Line 7:103:  'BuildingOfficeIcon' is defined but never used     @typescript-eslint/no-unused-vars
+  Line 15:70:  'refreshTasks' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/pages/knowledge/index.tsx
+  Line 146:6:  React Hook useEffect has a missing dependency: 'loadCompanies'. Either include it or remove the dependency array                      react-hooks/exhaustive-deps
+  Line 153:6:  React Hook useEffect has missing dependencies: 'loadDocuments' and 'loadFolders'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 163:6:  React Hook useEffect has a missing dependency: 'selectedCompany?.id'. Either include it or remove the dependency array                react-hooks/exhaustive-deps
+
+src/pages/proposal/index.tsx
+  Line 160:9:  'handleContentUpdated' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/task/index.tsx
+  Line 4:17:   'useState' is defined but never used               @typescript-eslint/no-unused-vars
+  Line 4:27:   'useEffect' is defined but never used              @typescript-eslint/no-unused-vars
+  Line 7:103:  'BuildingOfficeIcon' is defined but never used     @typescript-eslint/no-unused-vars
+  Line 15:70:  'refreshTasks' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+ERROR in src/pages/knowledge/index.tsx:261:57
+TS2345: Argument of type '{ companyId: string; folderId: string; }' is not assignable to parameter of type 'string'.
+    259 |     setLoading(true);
+    260 |     try {
+  > 261 |       const response = await knowledgeApi.listDocuments({
+        |                                                         ^
+  > 262 |         companyId: selectedCompany!.id,
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 263 |         folderId: folder.id,
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 264 |       });
+        | ^^^^^^^^
+    265 |       if (response.success) {
+    266 |         setFolderDocuments(response.documents);
+    267 |       }
+
+ERROR in src/pages/knowledge/index.tsx:311:7
+TS2552: Cannot find name 'setUploadFile'. Did you mean 'setUploadFiles'?
+    309 |         description: '',
+    310 |       });
+  > 311 |       setUploadFile(null);
+        |       ^^^^^^^^^^^^^
+    312 |     }
+    313 |     setShowDocumentModal(true);
+    314 |   };
+
+ERROR in src/pages/knowledge/index.tsx:374:9
+TS2552: Cannot find name 'loadFolderDocuments'. Did you mean 'folderDocuments'?
+    372 |       loadDocuments();
+    373 |       if (viewingFolder) {
+  > 374 |         loadFolderDocuments(viewingFolder.id);
+        |         ^^^^^^^^^^^^^^^^^^^
+    375 |       }
+    376 |       toast.success(editingDoc ? '更新成功' : '上传成功');
+    377 |     } catch (error) {
+
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/pages/knowledge/index.tsx
+  Line 146:6:  React Hook useEffect has a missing dependency: 'loadCompanies'. Either include it or remove the dependency array                      react-hooks/exhaustive-deps
+  Line 153:6:  React Hook useEffect has missing dependencies: 'loadDocuments' and 'loadFolders'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 163:6:  React Hook useEffect has a missing dependency: 'selectedCompany?.id'. Either include it or remove the dependency array                react-hooks/exhaustive-deps
+
+src/pages/proposal/index.tsx
+  Line 160:9:  'handleContentUpdated' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/task/index.tsx
+  Line 4:17:   'useState' is defined but never used               @typescript-eslint/no-unused-vars
+  Line 4:27:   'useEffect' is defined but never used              @typescript-eslint/no-unused-vars
+  Line 7:103:  'BuildingOfficeIcon' is defined but never used     @typescript-eslint/no-unused-vars
+  Line 15:70:  'refreshTasks' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/pages/knowledge/index.tsx
+  Line 146:6:  React Hook useEffect has a missing dependency: 'loadCompanies'. Either include it or remove the dependency array                      react-hooks/exhaustive-deps
+  Line 153:6:  React Hook useEffect has missing dependencies: 'loadDocuments' and 'loadFolders'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 163:6:  React Hook useEffect has a missing dependency: 'selectedCompany?.id'. Either include it or remove the dependency array                react-hooks/exhaustive-deps
+
+src/pages/proposal/index.tsx
+  Line 160:9:  'handleContentUpdated' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/task/index.tsx
+  Line 4:17:   'useState' is defined but never used               @typescript-eslint/no-unused-vars
+  Line 4:27:   'useEffect' is defined but never used              @typescript-eslint/no-unused-vars
+  Line 7:103:  'BuildingOfficeIcon' is defined but never used     @typescript-eslint/no-unused-vars
+  Line 15:70:  'refreshTasks' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+ERROR in src/pages/knowledge/index.tsx:313:7
+TS2552: Cannot find name 'setUploadFile'. Did you mean 'setUploadFiles'?
+    311 |         description: '',
+    312 |       });
+  > 313 |       setUploadFile(null);
+        |       ^^^^^^^^^^^^^
+    314 |     }
+    315 |     setShowDocumentModal(true);
+    316 |   };
+
+ERROR in src/pages/knowledge/index.tsx:376:9
+TS2552: Cannot find name 'loadFolderDocuments'. Did you mean 'folderDocuments'?
+    374 |       loadDocuments();
+    375 |       if (viewingFolder) {
+  > 376 |         loadFolderDocuments(viewingFolder.id);
+        |         ^^^^^^^^^^^^^^^^^^^
+    377 |       }
+    378 |       toast.success(editingDoc ? '更新成功' : '上传成功');
+    379 |     } catch (error) {
+
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/pages/knowledge/index.tsx
+  Line 146:6:  React Hook useEffect has a missing dependency: 'loadCompanies'. Either include it or remove the dependency array                      react-hooks/exhaustive-deps
+  Line 153:6:  React Hook useEffect has missing dependencies: 'loadDocuments' and 'loadFolders'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 163:6:  React Hook useEffect has a missing dependency: 'selectedCompany?.id'. Either include it or remove the dependency array                react-hooks/exhaustive-deps
+
+src/pages/proposal/index.tsx
+  Line 160:9:  'handleContentUpdated' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/task/index.tsx
+  Line 4:17:   'useState' is defined but never used               @typescript-eslint/no-unused-vars
+  Line 4:27:   'useEffect' is defined but never used              @typescript-eslint/no-unused-vars
+  Line 7:103:  'BuildingOfficeIcon' is defined but never used     @typescript-eslint/no-unused-vars
+  Line 15:70:  'refreshTasks' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/pages/knowledge/index.tsx
+  Line 146:6:  React Hook useEffect has a missing dependency: 'loadCompanies'. Either include it or remove the dependency array                      react-hooks/exhaustive-deps
+  Line 153:6:  React Hook useEffect has missing dependencies: 'loadDocuments' and 'loadFolders'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 163:6:  React Hook useEffect has a missing dependency: 'selectedCompany?.id'. Either include it or remove the dependency array                react-hooks/exhaustive-deps
+
+src/pages/proposal/index.tsx
+  Line 160:9:  'handleContentUpdated' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/task/index.tsx
+  Line 4:17:   'useState' is defined but never used               @typescript-eslint/no-unused-vars
+  Line 4:27:   'useEffect' is defined but never used              @typescript-eslint/no-unused-vars
+  Line 7:103:  'BuildingOfficeIcon' is defined but never used     @typescript-eslint/no-unused-vars
+  Line 15:70:  'refreshTasks' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+ERROR in src/pages/knowledge/index.tsx:376:9
+TS2552: Cannot find name 'loadFolderDocuments'. Did you mean 'folderDocuments'?
+    374 |       loadDocuments();
+    375 |       if (viewingFolder) {
+  > 376 |         loadFolderDocuments(viewingFolder.id);
+        |         ^^^^^^^^^^^^^^^^^^^
+    377 |       }
+    378 |       toast.success(editingDoc ? '更新成功' : '上传成功');
+    379 |     } catch (error) {
+
+Compiling...
+Compiled with warnings.
+
+[eslint] 
+src/pages/knowledge/index.tsx
+  Line 146:6:  React Hook useEffect has a missing dependency: 'loadCompanies'. Either include it or remove the dependency array                      react-hooks/exhaustive-deps
+  Line 153:6:  React Hook useEffect has missing dependencies: 'loadDocuments' and 'loadFolders'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 163:6:  React Hook useEffect has a missing dependency: 'selectedCompany?.id'. Either include it or remove the dependency array                react-hooks/exhaustive-deps
+
+src/pages/proposal/index.tsx
+  Line 160:9:  'handleContentUpdated' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/task/index.tsx
+  Line 4:17:   'useState' is defined but never used               @typescript-eslint/no-unused-vars
+  Line 4:27:   'useEffect' is defined but never used              @typescript-eslint/no-unused-vars
+  Line 7:103:  'BuildingOfficeIcon' is defined but never used     @typescript-eslint/no-unused-vars
+  Line 15:70:  'refreshTasks' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+WARNING in [eslint] 
+src/pages/knowledge/index.tsx
+  Line 146:6:  React Hook useEffect has a missing dependency: 'loadCompanies'. Either include it or remove the dependency array                      react-hooks/exhaustive-deps
+  Line 153:6:  React Hook useEffect has missing dependencies: 'loadDocuments' and 'loadFolders'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  Line 163:6:  React Hook useEffect has a missing dependency: 'selectedCompany?.id'. Either include it or remove the dependency array                react-hooks/exhaustive-deps
+
+src/pages/proposal/index.tsx
+  Line 160:9:  'handleContentUpdated' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+src/pages/task/index.tsx
+  Line 4:17:   'useState' is defined but never used               @typescript-eslint/no-unused-vars
+  Line 4:27:   'useEffect' is defined but never used              @typescript-eslint/no-unused-vars
+  Line 7:103:  'BuildingOfficeIcon' is defined but never used     @typescript-eslint/no-unused-vars
+  Line 15:70:  'refreshTasks' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+webpack compiled with 1 warning
+No issues found.

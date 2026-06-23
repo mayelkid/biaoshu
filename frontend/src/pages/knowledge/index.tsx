@@ -66,7 +66,7 @@ const KnowledgeBase: React.FC = () => {
     tags: '',
     description: '',
   });
-  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [uploadFiles, setUploadFiles] = useState<File[]>([]);
   
   // 文件夹弹窗
   const [showFolderModal, setShowFolderModal] = useState(false);
@@ -258,10 +258,12 @@ const KnowledgeBase: React.FC = () => {
     // 加载文件夹内资料
     setLoading(true);
     try {
-      const response = await knowledgeApi.listDocuments({
-        companyId: selectedCompany!.id,
-        folderId: folder.id,
-      });
+      const response = await knowledgeApi.listDocuments(
+        undefined,
+        undefined,
+        selectedCompany!.id,
+        folder.id
+      );
       if (response.success) {
         setFolderDocuments(response.documents);
       }
@@ -308,7 +310,7 @@ const KnowledgeBase: React.FC = () => {
         tags: '',
         description: '',
       });
-      setUploadFile(null);
+      setUploadFiles([]);
     }
     setShowDocumentModal(true);
   };
@@ -317,14 +319,23 @@ const KnowledgeBase: React.FC = () => {
   const closeDocumentModal = () => {
     setShowDocumentModal(false);
     setEditingDoc(null);
-    setUploadFile(null);
+    setUploadFiles([]);
   };
 
   // 保存文档
   const handleSaveDocument = async () => {
-    if (!documentFormData.title.trim()) {
-      toast.error('请输入文档标题');
-      return;
+    // 文本类型需要内容
+    if (documentFormData.documentType === 'text') {
+      if (!documentFormData.content.trim()) {
+        toast.error('请输入文档内容');
+        return;
+      }
+    } else {
+      // 非文本类型需要至少一个文件
+      if (uploadFiles.length === 0) {
+        toast.error('请选择至少一个文件');
+        return;
+      }
     }
 
     try {
@@ -347,11 +358,10 @@ const KnowledgeBase: React.FC = () => {
             description: documentFormData.description,
             company_id: selectedCompany?.id,
           });
-        } else if (uploadFile) {
-          await knowledgeApi.uploadFile(
-            documentFormData.title,
+        } else if (uploadFiles.length > 0) {
+          await knowledgeApi.uploadFiles(
             documentFormData.category,
-            uploadFile,
+            uploadFiles,
             selectedCompany?.id,
             documentFormData.description,
             documentFormData.tags.split(',').map((t) => t.trim()).filter(Boolean),
@@ -362,7 +372,19 @@ const KnowledgeBase: React.FC = () => {
 
       closeDocumentModal();
       loadDocuments();
-      toast.success(editingDoc ? '更新成功' : '创建成功');
+      if (viewingFolder) {
+        // 重新加载文件夹内容
+        const response = await knowledgeApi.listDocuments(
+          undefined,
+          undefined,
+          selectedCompany?.id,
+          viewingFolder.id
+        );
+        if (response.success) {
+          setFolderDocuments(response.documents);
+        }
+      }
+      toast.success(editingDoc ? '更新成功' : '上传成功');
     } catch (error) {
       console.error('保存失败:', error);
       toast.error('保存失败');
@@ -843,18 +865,6 @@ const KnowledgeBase: React.FC = () => {
 
             <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
               <div className="space-y-4">
-                {/* 标题 */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">标题 *</label>
-                  <input
-                    type="text"
-                    value={documentFormData.title}
-                    onChange={(e) => setDocumentFormData({ ...documentFormData, title: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="请输入文档标题"
-                  />
-                </div>
-
                 {/* 分类 */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">分类</label>
@@ -871,30 +881,29 @@ const KnowledgeBase: React.FC = () => {
                   </select>
                 </div>
 
-                {/* 文件上传 */}
+                {/* 描述 */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">描述</label>
+                  <textarea
+                    value={documentFormData.description}
+                    onChange={(e) => setDocumentFormData({ ...documentFormData, description: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                    rows={2}
+                    placeholder="简短描述此文档..."
+                  />
+                </div>
+
+                {/* 文件上传（多文件） */}
                 {!editingDoc && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">文件</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">文件（支持多选）</label>
                     <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-500 transition-colors">
                       <input
                         type="file"
+                        multiple
                         onChange={(e) => {
-                          const file = e.target.files?.[0] || null;
-                          setUploadFile(file);
-                          if (file) {
-                            // 根据文件类型自动识别文档类型
-                            let autoType: DocumentType = 'file';
-                            if (file.type.startsWith('image/')) {
-                              autoType = 'image';
-                            } else if (file.type.includes('pdf') || file.type.includes('word') || 
-                                       file.type.includes('document') || file.type.includes('excel') ||
-                                       file.type.includes('spreadsheet') || file.type.includes('presentation')) {
-                              autoType = 'file';
-                            } else if (file.type.startsWith('text/')) {
-                              autoType = 'text';
-                            }
-                            setDocumentFormData({ ...documentFormData, documentType: autoType });
-                          }
+                          const files = e.target.files ? Array.from(e.target.files) : [];
+                          setUploadFiles(files);
                         }}
                         className="hidden"
                         id="file-upload"
@@ -903,16 +912,20 @@ const KnowledgeBase: React.FC = () => {
                       <label htmlFor="file-upload" className="cursor-pointer">
                         <DocumentIcon className="w-12 h-12 mx-auto text-gray-400 mb-2" />
                         <p className="text-gray-600">点击或拖拽文件到此处</p>
-                        <p className="text-xs text-gray-400 mt-1">支持 PDF、Word、Excel、图片等格式</p>
-                        {uploadFile && (
-                          <p className="text-blue-600 mt-2">{uploadFile.name}</p>
-                        )}
+                        <p className="text-xs text-gray-400 mt-1">支持 PDF、Word、Excel、图片等格式，可多选</p>
                       </label>
+                      {uploadFiles.length > 0 && (
+                        <div className="mt-3 space-y-1">
+                          {uploadFiles.map((file, index) => (
+                            <p key={index} className="text-blue-600 text-sm truncate">{file.name}</p>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
 
-                {/* 文本内容（仅在编辑模式或未上传文件时显示） */}
+                {/* 文本内容（仅在编辑模式且为文本类型时显示） */}
                 {(editingDoc && editingDoc.document_type === 'text') && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">内容</label>
@@ -925,18 +938,6 @@ const KnowledgeBase: React.FC = () => {
                     />
                   </div>
                 )}
-
-                {/* 描述 */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">描述</label>
-                  <textarea
-                    value={documentFormData.description}
-                    onChange={(e) => setDocumentFormData({ ...documentFormData, description: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
-                    rows={2}
-                    placeholder="简短描述此文档..."
-                  />
-                </div>
 
                 {/* 标签 */}
                 <div>

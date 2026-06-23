@@ -142,59 +142,71 @@ async def get_document(
     return DocumentResponse(document=document)
 
 
-@router.post("/documents", response_model=DocumentResponse)
+@router.post("/documents", response_model=DocumentListResponse)
 async def create_document(
-    title: str = Form(...),
+    title: Optional[str] = Form(None),
     category: DocumentCategory = Form(...),
     document_type: str = Form("file"),
     company_id: Optional[str] = Form(None),
     folder_id: Optional[str] = Form(None),
     description: Optional[str] = Form(None),
     tags: Optional[str] = Form(None),
-    file: UploadFile = File(None),
+    files: List[UploadFile] = File(default=[]),
     user_id: str = Depends(get_current_user_id),
     knowledge_service: KnowledgeService = Depends(get_knowledge_service),
 ):
-    """创建文档"""
-    # 构建请求对象
-    request = CreateDocumentRequest(
-        title=title,
-        category=category,
-        document_type=DocumentType(document_type),
-        company_id=company_id,
-        folder_id=folder_id if folder_id else None,
-        description=description,
-        tags=json.loads(tags) if tags else [],
-    )
+    """批量创建文档（支持多文件上传）"""
+    created_documents = []
     
-    file_info = None
-    if file:
-        # 保存上传的文件
-        user_dir = os.path.join(settings.upload_dir, user_id, "knowledge")
-        os.makedirs(user_dir, exist_ok=True)
+    for file in files:
+        # 使用文件名作为标题
+        doc_title = title if title else file.filename
         
-        file_path = os.path.join(user_dir, file.filename)
-        with open(file_path, "wb") as f:
-            f.write(await file.read())
+        # 构建请求对象
+        request = CreateDocumentRequest(
+            title=doc_title,
+            category=category,
+            document_type=DocumentType(document_type),
+            company_id=company_id,
+            folder_id=folder_id if folder_id else None,
+            description=description,
+            tags=json.loads(tags) if tags else [],
+        )
         
-        # 根据文件类型自动识别文档类型
-        content_type = file.content_type.lower() if file.content_type else ""
-        filename_lower = file.filename.lower()
+        file_info = None
+        if file and file.filename:
+            # 保存上传的文件到 企业/目录 结构
+            user_dir = os.path.join(settings.upload_dir, user_id, "knowledge")
+            if company_id:
+                user_dir = os.path.join(user_dir, company_id)
+            if folder_id:
+                user_dir = os.path.join(user_dir, folder_id)
+            os.makedirs(user_dir, exist_ok=True)
+            
+            file_path = os.path.join(user_dir, file.filename)
+            with open(file_path, "wb") as f:
+                f.write(await file.read())
+            
+            # 根据文件类型自动识别文档类型
+            content_type = file.content_type.lower() if file.content_type else ""
+            filename_lower = file.filename.lower()
+            
+            # 图片类型
+            if content_type.startswith("image/") or any(filename_lower.endswith(ext) for ext in ['.png', '.jpg', '.jpeg', '.gif', '.svg', '.bmp', '.webp']):
+                request.document_type = DocumentType.IMAGE
+            # 文本类型
+            elif content_type.startswith("text/") or any(filename_lower.endswith(ext) for ext in ['.txt', '.md', '.csv']):
+                request.document_type = DocumentType.TEXT
+            # 其他文件类型（PDF、Word、Excel等）
+            else:
+                request.document_type = DocumentType.FILE
+            
+            file_info = {"file_path": file_path, "file_name": file.filename}
         
-        # 图片类型
-        if content_type.startswith("image/") or any(filename_lower.endswith(ext) for ext in ['.png', '.jpg', '.jpeg', '.gif', '.svg', '.bmp', '.webp']):
-            request.document_type = DocumentType.IMAGE
-        # 文本类型
-        elif content_type.startswith("text/") or any(filename_lower.endswith(ext) for ext in ['.txt', '.md', '.csv']):
-            request.document_type = DocumentType.TEXT
-        # 其他文件类型（PDF、Word、Excel等）
-        else:
-            request.document_type = DocumentType.FILE
-        
-        file_info = {"file_path": file_path, "file_name": file.filename}
+        document = knowledge_service.create_document(user_id, request, file_info)
+        created_documents.append(document)
     
-    document = knowledge_service.create_document(user_id, request, file_info)
-    return DocumentResponse(document=document)
+    return DocumentListResponse(documents=created_documents, total=len(created_documents))
 
 
 @router.put("/documents/{doc_id}", response_model=DocumentResponse)

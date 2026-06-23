@@ -245,6 +245,37 @@ export const knowledgeApi = {
     }
   },
 
+  // 批量上传文件（支持多文件）
+  async uploadFiles(
+    category: DocumentCategory,
+    files: File[],
+    companyId?: string,
+    description?: string,
+    tags?: string[],
+    folderId?: string
+  ): Promise<DocumentListResponse> {
+    try {
+      const formData = new FormData();
+      formData.append('category', category);
+      if (companyId) formData.append('company_id', companyId);
+      if (description) formData.append('description', description);
+      if (tags && tags.length > 0) formData.append('tags', JSON.stringify(tags));
+      if (folderId) formData.append('folder_id', folderId);
+      
+      // 添加多个文件
+      files.forEach((file) => {
+        formData.append('files', file);
+      });
+
+      const response = await axios.post('/api/knowledge/documents', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      return response.data;
+    } catch (error) {
+      throw new Error(getErrorMessage(error, '上传文件失败'));
+    }
+  },
+
   // 更新文档
   async updateDocument(docId: string, request: UpdateDocumentRequest): Promise<DocumentResponse> {
     try {
