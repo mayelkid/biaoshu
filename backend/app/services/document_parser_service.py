@@ -36,6 +36,9 @@ class DocumentParserService:
             # 3. 提取内容摘要（包含文字和图片内容）
             summary_result = await self._extract_summary(content, images_content, file_type, title)
 
+            # 4. 保存摘要到文件
+            await self._save_summary(document_id, company_id, summary_result)
+
             return {
                 "status": "completed",
                 "summary": summary_result.get("summary", ""),
@@ -284,6 +287,54 @@ class DocumentParserService:
             "key_points": [],
             "category_hint": None,
             "keywords": []
+        }
+
+    def _save_summary(self, doc_id: str, summary_data: dict):
+        """保存文档摘要"""
+        try:
+            summary_dir = os.path.join(self.upload_dir, "summaries")
+            os.makedirs(summary_dir, exist_ok=True)
+            summary_file = os.path.join(summary_dir, f"{doc_id}.json")
+            with open(summary_file, 'w', encoding='utf-8') as f:
+                json.dump(summary_data, f, ensure_ascii=False, indent=2)
+        except Exception as e:
+            print(f"Error saving summary: {e}")
+
+    def _load_summaries(self, doc_ids: List[str]) -> dict:
+        """批量加载文档摘要"""
+        summaries = {}
+        try:
+            summary_dir = os.path.join(self.upload_dir, "summaries")
+            if not os.path.exists(summary_dir):
+                return summaries
+            for doc_id in doc_ids:
+                summary_file = os.path.join(summary_dir, f"{doc_id}.json")
+                if os.path.exists(summary_file):
+                    with open(summary_file, 'r', encoding='utf-8') as f:
+                        summaries[doc_id] = json.load(f)
+        except Exception as e:
+            print(f"Error loading summaries: {e}")
+        return summaries
+
+    def get_summary(self, doc_id: str) -> Optional[dict]:
+        """获取文档摘要"""
+        try:
+            summary_dir = os.path.join(self.upload_dir, "summaries")
+            summary_file = os.path.join(summary_dir, f"{doc_id}.json")
+            if os.path.exists(summary_file):
+                with open(summary_file, 'r', encoding='utf-8') as f:
+                    return json.load(f)
+        except Exception as e:
+            print(f"Error loading summary: {e}")
+        return None
+
+    def get_summary_status(self, doc_id: str) -> dict:
+        """获取文档解析状态"""
+        summary = self.get_summary(doc_id)
+        return {
+            "document_id": doc_id,
+            "status": ParseStatus.COMPLETED if summary else ParseStatus.PENDING,
+            "summary": summary
         }
 
 
