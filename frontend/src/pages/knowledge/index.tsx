@@ -750,6 +750,14 @@ const KnowledgeBase: React.FC = () => {
             )}
 
             {/* 文档列表 */}
+            {documents.length > 0 && (
+              <div className="mb-4">
+                <h3 className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                  <DocumentIcon className="w-4 h-4" />
+                  文档 ({documents.length})
+                </h3>
+              </div>
+            )}
             {loading ? (
               <div className="flex items-center justify-center h-full">
                 <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
