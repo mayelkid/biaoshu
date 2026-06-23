@@ -340,3 +340,7 @@ class DocumentParserService:
 
 # 全局实例
 document_parser_service = DocumentParserService()
+
+def get_document_parser_service() -> DocumentParserService:
+    """获取文档解析服务实例"""
+    return document_parser_service
