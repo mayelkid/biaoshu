@@ -504,7 +504,7 @@ const KnowledgeBase: React.FC = () => {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = doc.file_name || 'download';
+      a.download = doc.title || 'download';
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
