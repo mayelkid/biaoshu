@@ -273,6 +273,12 @@ const KnowledgeBase: React.FC = () => {
 
   // 进入企业详情
   const enterCompany = (company: Company) => {
+    // 清空上次数据，避免闪现
+    setFolders([]);
+    setDocuments([]);
+    setFolderDocuments([]);
+    setShowFolderContentsModal(false);
+    setViewingFolder(null);
     setSelectedCompany(company);
     setViewMode('company-detail');
     setKeyword('');
