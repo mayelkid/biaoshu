@@ -1099,30 +1099,89 @@ const KnowledgeBase: React.FC = () => {
                   <p>文件夹内暂无资料</p>
                 </div>
               ) : (
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {folderDocuments.map((doc) => (
                     <div
                       key={doc.id}
-                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                      className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
                     >
-                      <div className="flex items-center gap-3 flex-1 min-w-0">
-                        {getDocumentIcon(doc.document_type)}
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-gray-900 truncate">{doc.title}</p>
-                          <p className="text-sm text-gray-500">{doc.file_name || '文本内容'}</p>
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          {getDocumentIcon(doc.document_type)}
+                          <h3 className="font-medium text-gray-900 truncate max-w-[200px]" title={doc.title}>
+                            {doc.title}
+                          </h3>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          {doc.file_path && (
+                            <>
+                              <button
+                                onClick={() => handlePreview(doc)}
+                                className="p-1 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded transition-colors"
+                                title="预览"
+                              >
+                                <EyeIcon className="w-4 h-4" />
+                              </button>
+                              <a
+                                href={`/api/knowledge/documents/${doc.id}/download`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                                title="下载"
+                              >
+                                <ArrowDownTrayIcon className="w-4 h-4" />
+                              </a>
+                            </>
+                          )}
+                          <button
+                            onClick={() => openDocumentModal(doc)}
+                            className="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                            title="编辑"
+                          >
+                            <PencilSquareIcon className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteDocument(doc)}
+                            className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                            title="删除"
+                          >
+                            <TrashIcon className="w-4 h-4" />
+                          </button>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 ml-4">
-                        <span className="text-xs text-gray-500">
-                          {new Date(doc.created_at).toLocaleDateString()}
+
+                      <div className="text-sm text-gray-500 mb-2">
+                        <span className="inline-block px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs mr-2">
+                          {categoryLabels[doc.category]}
                         </span>
-                        <button
-                          onClick={() => handleDeleteDocument(doc)}
-                          className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-                          title="删除"
-                        >
-                          <TrashIcon className="w-4 h-4" />
-                        </button>
+                        <span className="inline-block px-2 py-0.5 bg-gray-100 text-gray-700 rounded text-xs">
+                          {typeLabels[doc.document_type]}
+                        </span>
+                      </div>
+
+                      {doc.description && (
+                        <p className="text-sm text-gray-600 mb-2 line-clamp-2">{doc.description}</p>
+                      )}
+
+                      {doc.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mb-2">
+                          {doc.tags.slice(0, 3).map((tag, index) => (
+                            <span
+                              key={index}
+                              className="inline-flex items-center px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-xs"
+                            >
+                              <TagIcon className="w-3 h-3 mr-1" />
+                              {tag}
+                            </span>
+                          ))}
+                          {doc.tags.length > 3 && (
+                            <span className="text-xs text-gray-400">+{doc.tags.length - 3}</span>
+                          )}
+                        </div>
+                      )}
+
+                      <div className="mt-3 pt-3 border-t border-gray-100 text-xs text-gray-400">
+                        更新于 {formatTime(doc.updated_at)}
                       </div>
                     </div>
                   ))}
