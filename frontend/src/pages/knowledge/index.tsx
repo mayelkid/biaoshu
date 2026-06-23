@@ -87,6 +87,9 @@ const KnowledgeBase: React.FC = () => {
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [previewDoc, setPreviewDoc] = useState<KnowledgeDocument | null>(null);
   
+  // 编辑时的文件名
+  const [editFileName, setEditFileName] = useState('');
+  
   // 获取文件预览URL
   const getPreviewUrl = (doc: KnowledgeDocument): string => {
     if (!doc.file_path) return '';
@@ -326,8 +329,9 @@ const KnowledgeBase: React.FC = () => {
   const openDocumentModal = (doc?: KnowledgeDocument) => {
     if (doc) {
       setEditingDoc(doc);
+      setEditFileName(doc.file_name || doc.title || '');  // 独立存储文件名
       setDocumentFormData({
-        title: doc.file_name || doc.title,  // 优先使用文件名
+        title: doc.title || '',
         content: doc.content || '',
         category: doc.category,
         documentType: doc.document_type,
@@ -360,9 +364,9 @@ const KnowledgeBase: React.FC = () => {
   const handleSaveDocument = async () => {
     try {
       if (editingDoc) {
-        // 编辑模式：不需要文件，只更新元数据
+        // 编辑模式：更新文件名和元数据
         await knowledgeApi.updateDocument(editingDoc.id, {
-          title: documentFormData.title,
+          title: editFileName,  // 使用独立的文件名
           content: documentFormData.documentType === 'text' ? documentFormData.content : undefined,
           category: documentFormData.category,
           tags: documentFormData.tags.split(',').map((t) => t.trim()).filter(Boolean),
@@ -933,8 +937,8 @@ const KnowledgeBase: React.FC = () => {
                     <label className="block text-sm font-medium text-gray-700 mb-1">文件名</label>
                     <input
                       type="text"
-                      value={documentFormData.title}
-                      onChange={(e) => setDocumentFormData({ ...documentFormData, title: e.target.value })}
+                      value={editFileName}
+                      onChange={(e) => setEditFileName(e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       placeholder="请输入文件名"
                     />
