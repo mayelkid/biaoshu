@@ -127,8 +127,14 @@ class Folder(BaseModel):
     user_id: str = Field(..., description="用户ID")
     created_at: str = Field(..., description="创建时间")
     updated_at: str = Field(..., description="更新时间")
+    document_count: int = Field(0, description="文件夹内资料数量")
 
     model_config = {"validate_by_name": True}
+
+
+class UpdateFolderRequest(BaseModel):
+    """更新文件夹请求"""
+    name: Optional[str] = Field(None, description="文件夹名称")
 
 
 class CreateFolderRequest(BaseModel):

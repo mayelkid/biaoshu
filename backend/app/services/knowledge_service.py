@@ -16,6 +16,7 @@ from app.models.knowledge_schema import (
     UpdateCompanyRequest,
     Folder,
     CreateFolderRequest,
+    UpdateFolderRequest,
 )
 
 
@@ -289,8 +290,19 @@ class KnowledgeService:
         """获取指定企业的文件夹"""
         folders = self._load_folders(user_id)
         if company_id:
-            return [f for f in folders if f.company_id == company_id]
-        return folders
+            company_folders = [f for f in folders if f.company_id == company_id]
+        else:
+            company_folders = folders
+        
+        # 计算每个文件夹的资料数量
+        documents = self._load_documents(user_id)
+        for folder in company_folders:
+            folder.document_count = len([
+                d for d in documents 
+                if d.folder_id == folder.id and d.company_id == company_id
+            ])
+        
+        return company_folders
 
     def create_folder(self, user_id: str, request: CreateFolderRequest) -> Folder:
         """创建文件夹"""
@@ -310,6 +322,20 @@ class KnowledgeService:
         folders.append(folder)
         self._save_folders(user_id, folders)
         return folder
+
+    def update_folder(self, user_id: str, folder_id: str, request: UpdateFolderRequest) -> Optional[Folder]:
+        """更新文件夹"""
+        folders = self._load_folders(user_id)
+        
+        for folder in folders:
+            if folder.id == folder_id:
+                if request.name is not None:
+                    folder.name = request.name
+                folder.updated_at = datetime.now().isoformat()
+                self._save_folders(user_id, folders)
+                return folder
+        
+        return None
 
     def delete_folder(self, user_id: str, folder_id: str) -> bool:
         """删除文件夹"""

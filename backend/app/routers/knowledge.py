@@ -23,6 +23,7 @@ from app.models.knowledge_schema import (
     CompanyResponse,
     Folder,
     CreateFolderRequest,
+    UpdateFolderRequest,
     FolderListResponse,
 )
 from app.services.knowledge_service import get_knowledge_service, KnowledgeService
@@ -281,6 +282,22 @@ async def create_folder(
     """创建文件夹"""
     folder = knowledge_service.create_folder(user_id, request)
     folders = knowledge_service.get_folders_by_company(user_id, request.company_id or "")
+    return FolderListResponse(folders=folders)
+
+
+@router.put("/folders/{folder_id}", response_model=FolderListResponse)
+async def update_folder(
+    folder_id: str,
+    request: UpdateFolderRequest,
+    user_id: str = Depends(get_current_user_id),
+    knowledge_service: KnowledgeService = Depends(get_knowledge_service),
+):
+    """更新文件夹"""
+    folder = knowledge_service.update_folder(user_id, folder_id, request)
+    if not folder:
+        raise HTTPException(status_code=404, detail="文件夹不存在")
+    
+    folders = knowledge_service.get_folders_by_company(user_id, folder.company_id or "")
     return FolderListResponse(folders=folders)
 
 

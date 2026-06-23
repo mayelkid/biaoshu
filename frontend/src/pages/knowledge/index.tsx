@@ -72,6 +72,11 @@ const KnowledgeBase: React.FC = () => {
   const [showFolderModal, setShowFolderModal] = useState(false);
   const [folderName, setFolderName] = useState('');
   
+  // 修改文件夹名称弹窗
+  const [showEditFolderModal, setShowEditFolderModal] = useState(false);
+  const [editingFolder, setEditingFolder] = useState<Folder | null>(null);
+  const [editFolderName, setEditFolderName] = useState('');
+  
   // 文件夹内容弹窗
   const [showFolderContentsModal, setShowFolderContentsModal] = useState(false);
   const [viewingFolder, setViewingFolder] = useState<Folder | null>(null);
@@ -424,6 +429,25 @@ const KnowledgeBase: React.FC = () => {
     }
   };
 
+  // 修改文件夹名称
+  const handleEditFolder = async () => {
+    if (!editingFolder || !editFolderName.trim()) {
+      toast.error('请输入文件夹名称');
+      return;
+    }
+    try {
+      await knowledgeApi.updateFolder(editingFolder.id, { name: editFolderName.trim() });
+      toast.success('修改成功');
+      setShowEditFolderModal(false);
+      setEditingFolder(null);
+      setEditFolderName('');
+      loadFolders();
+    } catch (error) {
+      console.error('修改文件夹失败:', error);
+      toast.error('修改失败');
+    }
+  };
+
   // 删除文件夹
   const handleDeleteFolder = async (folder: Folder) => {
     await showConfirm({
@@ -673,20 +697,37 @@ const KnowledgeBase: React.FC = () => {
                       onClick={() => enterFolder(folder)}
                     >
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <FolderIcon className="w-5 h-5 text-amber-600" />
+                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                          <FolderIcon className="w-5 h-5 text-amber-600 flex-shrink-0" />
                           <span className="font-medium text-gray-800 truncate">{folder.name}</span>
                         </div>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteFolder(folder);
-                          }}
-                          className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-                          title="删除"
-                        >
-                          <TrashIcon className="w-4 h-4" />
-                        </button>
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
+                            {folder.document_count || 0} 个资料
+                          </span>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEditingFolder(folder);
+                              setEditFolderName(folder.name);
+                              setShowEditFolderModal(true);
+                            }}
+                            className="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                            title="重命名"
+                          >
+                            <PencilSquareIcon className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteFolder(folder);
+                            }}
+                            className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                            title="删除"
+                          >
+                            <TrashIcon className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -1108,6 +1149,65 @@ const KnowledgeBase: React.FC = () => {
               >
                 <FolderIcon className="w-4 h-4" />
                 创建文件夹
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 修改文件夹名称弹窗 */}
+      {showEditFolderModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
+            <div className="flex items-center justify-between p-4 border-b">
+              <h3 className="text-lg font-semibold text-gray-900">重命名文件夹</h3>
+              <button
+                onClick={() => {
+                  setShowEditFolderModal(false);
+                  setEditingFolder(null);
+                  setEditFolderName('');
+                }}
+                className="p-1 hover:bg-gray-100 rounded transition-colors"
+              >
+                <XMarkIcon className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">文件夹名称 *</label>
+                <input
+                  type="text"
+                  value={editFolderName}
+                  onChange={(e) => setEditFolderName(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="请输入文件夹名称"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleEditFolder();
+                    }
+                  }}
+                  autoFocus
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 p-4 border-t bg-gray-50">
+              <button
+                onClick={() => {
+                  setShowEditFolderModal(false);
+                  setEditingFolder(null);
+                  setEditFolderName('');
+                }}
+                className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                取消
+              </button>
+              <button
+                onClick={handleEditFolder}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+              >
+                保存修改
               </button>
             </div>
           </div>

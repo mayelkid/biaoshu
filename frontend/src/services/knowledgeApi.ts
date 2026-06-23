@@ -97,6 +97,11 @@ export interface Folder {
   user_id: string;
   created_at: string;
   updated_at: string;
+  document_count?: number;
+}
+
+export interface UpdateFolderRequest {
+  name?: string;
 }
 
 export interface CreateFolderRequest {
@@ -330,6 +335,16 @@ export const knowledgeApi = {
       return response.data;
     } catch (error) {
       throw new Error(getErrorMessage(error, '创建文件夹失败'));
+    }
+  },
+
+  // 更新文件夹
+  async updateFolder(folderId: string, request: UpdateFolderRequest): Promise<FolderListResponse> {
+    try {
+      const response = await axios.put(`/api/knowledge/folders/${folderId}`, request);
+      return response.data;
+    } catch (error) {
+      throw new Error(getErrorMessage(error, '更新文件夹失败'));
     }
   },
 
