@@ -413,6 +413,13 @@ const KnowledgeBase: React.FC = () => {
         }
       }
       toast.success(editingDoc ? '更新成功' : '上传成功');
+      // 上传成功后刷新文件夹列表（更新资料数量）
+      if (selectedCompany) {
+        const response = await knowledgeApi.listFolders(selectedCompany.id);
+        if (response.success) {
+          setFolders(response.folders || []);
+        }
+      }
     } catch (error) {
       console.error('保存失败:', error);
       toast.error('保存失败');
