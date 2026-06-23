@@ -82,6 +82,7 @@ const KnowledgeBase: React.FC = () => {
   const [showFolderContentsModal, setShowFolderContentsModal] = useState(false);
   const [viewingFolder, setViewingFolder] = useState<Folder | null>(null);
   const [folderDocuments, setFolderDocuments] = useState<KnowledgeDocument[]>([]);
+  const [folderLoading, setFolderLoading] = useState(false);
   
   // 预览弹窗
   const [showPreviewModal, setShowPreviewModal] = useState(false);
@@ -136,7 +137,7 @@ const KnowledgeBase: React.FC = () => {
     } catch (error) {
       console.error('加载企业列表失败:', error);
     } finally {
-      setLoading(false);
+      setFolderLoading(false);
     }
   };
 
@@ -293,7 +294,7 @@ const KnowledgeBase: React.FC = () => {
     setShowFolderContentsModal(true);
     
     // 加载文件夹内资料
-    setLoading(true);
+    setFolderLoading(true);
     try {
       const response = await knowledgeApi.listDocuments(
         undefined,
@@ -1089,7 +1090,7 @@ const KnowledgeBase: React.FC = () => {
 
             {/* 资料列表 */}
             <div className="flex-1 overflow-auto p-4">
-              {loading ? (
+              {folderLoading ? (
                 <div className="flex items-center justify-center py-12">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                 </div>
