@@ -54,12 +54,17 @@ async def health_check():
 
 # 获取 static 目录的绝对路径
 STATIC_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static")
+UPLOADS_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "uploads")
 
 
 # 静态文件服务（用于服务前端构建文件）
 if os.path.exists(STATIC_DIR):
     # 挂载静态资源文件夹（CSS/JS 等）
     app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+
+# 挂载 uploads 目录（用于文件预览和下载）
+if os.path.exists(UPLOADS_DIR):
+    app.mount("/uploads", StaticFiles(directory=UPLOADS_DIR), name="uploads")
 
     # 处理React应用的路由（SPA路由支持）
     @app.get("/")

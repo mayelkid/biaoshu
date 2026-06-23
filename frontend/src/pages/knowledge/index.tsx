@@ -20,6 +20,7 @@ import {
   BuildingOfficeIcon,
   ChevronLeftIcon,
   ArrowUpTrayIcon,
+  EyeIcon,
 } from '@heroicons/react/24/outline';
 import {
   knowledgeApi,
@@ -81,6 +82,34 @@ const KnowledgeBase: React.FC = () => {
   const [showFolderContentsModal, setShowFolderContentsModal] = useState(false);
   const [viewingFolder, setViewingFolder] = useState<Folder | null>(null);
   const [folderDocuments, setFolderDocuments] = useState<KnowledgeDocument[]>([]);
+  
+  // 预览弹窗
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [previewDoc, setPreviewDoc] = useState<KnowledgeDocument | null>(null);
+  
+  // 获取文件预览URL
+  const getPreviewUrl = (doc: KnowledgeDocument): string => {
+    if (!doc.file_path) return '';
+    // 文件路径格式: uploads/{user_id}/knowledge/{company_id}/{folder_id}/{file_name}
+    // 后端 serve 静态文件时直接使用 uploads 作为根目录
+    return `/uploads/${doc.file_path.replace(/^uploads\//, '')}`;
+  };
+  
+  // 判断文件类型
+  const getFileCategory = (fileName: string): 'pdf' | 'image' | 'word' | 'excel' | 'other' => {
+    const ext = fileName?.toLowerCase().split('.').pop() || '';
+    if (ext === 'pdf') return 'pdf';
+    if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'].includes(ext)) return 'image';
+    if (['doc', 'docx'].includes(ext)) return 'word';
+    if (['xls', 'xlsx'].includes(ext)) return 'excel';
+    return 'other';
+  };
+  
+  // 打开预览
+  const handlePreview = (doc: KnowledgeDocument) => {
+    setPreviewDoc(doc);
+    setShowPreviewModal(true);
+  };
   
   const companiesLoadedRef = useRef(false);
 
@@ -743,6 +772,15 @@ const KnowledgeBase: React.FC = () => {
                         </h3>
                       </div>
                       <div className="flex items-center gap-1">
+                        {doc.file_path && (
+                          <button
+                            onClick={() => handlePreview(doc)}
+                            className="p-1 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded transition-colors"
+                            title="预览"
+                          >
+                            <EyeIcon className="w-4 h-4" />
+                          </button>
+                        )}
                         <button
                           onClick={() => openDocumentModal(doc)}
                           className="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
@@ -872,7 +910,7 @@ const KnowledgeBase: React.FC = () => {
 
       {/* 文档创建/编辑弹窗 */}
       {showDocumentModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
           <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
             <div className="flex items-center justify-between p-4 border-b">
               <h3 className="text-lg font-semibold text-gray-900">
@@ -1191,6 +1229,85 @@ const KnowledgeBase: React.FC = () => {
               >
                 保存修改
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 预览弹窗 */}
+      {showPreviewModal && previewDoc && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-5xl h-[90vh] flex flex-col">
+            {/* 标题栏 */}
+            <div className="flex items-center justify-between p-4 border-b">
+              <h3 className="text-lg font-medium text-gray-900 truncate">{previewDoc.title}</h3>
+              <button
+                onClick={() => {
+                  setShowPreviewModal(false);
+                  setPreviewDoc(null);
+                }}
+                className="p-1 text-gray-400 hover:text-gray-600 rounded transition-colors"
+              >
+                <XMarkIcon className="w-6 h-6" />
+              </button>
+            </div>
+            
+            {/* 预览内容区 */}
+            <div className="flex-1 overflow-hidden p-4">
+              {(() => {
+                const fileUrl = getPreviewUrl(previewDoc);
+                const fileCategory = getFileCategory(previewDoc.file_name || previewDoc.title);
+                
+                // 外部预览链接（用于 Office 文档）
+                const officePreviewUrl = fileCategory === 'word' || fileCategory === 'excel'
+                  ? `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(fileUrl)}`
+                  : '';
+                
+                switch (fileCategory) {
+                  case 'pdf':
+                    return (
+                      <iframe
+                        src={fileUrl}
+                        className="w-full h-full border-0"
+                        title={previewDoc.title}
+                      />
+                    );
+                  case 'image':
+                    return (
+                      <div className="w-full h-full flex items-center justify-center bg-gray-100 rounded-lg overflow-auto">
+                        <img
+                          src={fileUrl}
+                          alt={previewDoc.title}
+                          className="max-w-full max-h-full object-contain"
+                        />
+                      </div>
+                    );
+                  case 'word':
+                  case 'excel':
+                    return (
+                      <iframe
+                        src={officePreviewUrl}
+                        className="w-full h-full border-0"
+                        title={previewDoc.title}
+                      />
+                    );
+                  default:
+                    return (
+                      <div className="w-full h-full flex flex-col items-center justify-center text-gray-500">
+                        <DocumentIcon className="w-16 h-16 mb-4" />
+                        <p className="text-lg mb-2">该文件类型暂不支持预览</p>
+                        <p className="text-sm">文件名：{previewDoc.file_name}</p>
+                        <a
+                          href={fileUrl}
+                          download={previewDoc.file_name}
+                          className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                        >
+                          下载文件
+                        </a>
+                      </div>
+                    );
+                }
+              })()}
             </div>
           </div>
         </div>
