@@ -16,9 +16,6 @@ fuser -k 8000/tcp 2>/dev/null || true
 fuser -k 5000/tcp 2>/dev/null || true
 sleep 1
 
-# 安装后端依赖
-pip3 install -r backend/requirements.txt -q
-
 # 启动后端服务（8000端口）
 cd backend
 nohup python3 run.py > $LOG_DIR/backend.log 2>&1 &
