@@ -18,7 +18,7 @@ sleep 1
 
 # 启动后端服务（8000端口）
 cd backend
-nohup python3 -m uvicorn app.main:app --host 0.0.0.0 --port 8000 > $LOG_DIR/backend.log 2>&1 &
+nohup python3 run.py > $LOG_DIR/backend.log 2>&1 &
 cd ..
 
 # 等待后端启动
