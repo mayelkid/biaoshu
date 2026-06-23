@@ -53,6 +53,11 @@ export interface KnowledgeDocument {
   company_id?: string;
   folder_id?: string;
   summary?: string;  // AI 解析的文档摘要
+  parse_status?: 'processing' | 'completed' | 'failed';  // 解析状态
+  key_points?: string[];  // 关键要点
+  keywords?: string[];  // 关键词
+  category_hint?: string;  // 分类建议
+  processed_at?: string;  // 处理时间
   created_at: string;
   updated_at: string;
 }

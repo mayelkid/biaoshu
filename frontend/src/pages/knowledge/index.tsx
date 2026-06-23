@@ -91,6 +91,11 @@ const KnowledgeBase: React.FC = () => {
   // 编辑时的文件名
   const [editFileName, setEditFileName] = useState('');
   
+  // 解析详情弹窗
+  const [showParseDetailModal, setShowParseDetailModal] = useState(false);
+  const [parseDetailDoc, setParseDetailDoc] = useState<KnowledgeDocument | null>(null);
+  const [parseDetailLoading, setParseDetailLoading] = useState(false);
+  
   // 获取文件预览URL
   const getPreviewUrl = (doc: KnowledgeDocument): string => {
     if (!doc.file_path) return '';
@@ -114,7 +119,13 @@ const KnowledgeBase: React.FC = () => {
     setPreviewDoc(doc);
     setShowPreviewModal(true);
   };
-  
+
+  // 查看解析详情
+  const handleViewParseDetail = async (doc: KnowledgeDocument) => {
+    setParseDetailDoc(doc);
+    setShowParseDetailModal(true);
+  };
+
   const companiesLoadedRef = useRef(false);
 
   // 加载企业列表
@@ -902,9 +913,24 @@ const KnowledgeBase: React.FC = () => {
 
 
                     {doc.summary && (
-                      <p className="text-sm text-blue-600 mt-2 italic line-clamp-2 bg-blue-50 p-2 rounded">
+                      <p className="text-sm text-blue-600 mt-2 italic line-clamp-2 bg-blue-50 p-2 rounded cursor-pointer hover:bg-blue-100" onClick={() => handleViewParseDetail(doc)}>
                         AI摘要：{doc.summary}
                       </p>
+                    )}
+
+                    {/* 解析状态 */}
+                    {!doc.summary && (
+                      <div className="mt-2 flex items-center gap-2">
+                        <span className="px-2 py-1 text-xs bg-yellow-100 text-yellow-700 rounded">
+                          未解析
+                        </span>
+                        <button
+                          onClick={() => handleViewParseDetail(doc)}
+                          className="text-xs text-blue-600 hover:text-blue-800"
+                        >
+                          解析
+                        </button>
+                      </div>
                     )}
 
                     <div className="mt-3 pt-3 border-t border-gray-100 text-xs text-gray-400">
@@ -1440,6 +1466,66 @@ const KnowledgeBase: React.FC = () => {
                     );
                 }
               })()}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* AI 解析详情弹窗 */}
+      {showParseDetailModal && parseDetailDoc && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[80vh] flex flex-col">
+            <div className="flex items-center justify-between p-4 border-b">
+              <h3 className="text-lg font-medium text-gray-900">AI 解析结果</h3>
+              <button
+                onClick={() => {
+                  setShowParseDetailModal(false);
+                  setParseDetailDoc(null);
+                }}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <XMarkIcon className="w-6 h-6" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              <div>
+                <h4 className="text-sm font-medium text-gray-500 mb-1">文档标题</h4>
+                <p className="text-gray-900">{parseDetailDoc.title}</p>
+              </div>
+              <div>
+                <h4 className="text-sm font-medium text-gray-500 mb-1">摘要</h4>
+                <p className="text-gray-700 whitespace-pre-wrap">{parseDetailDoc.summary}</p>
+              </div>
+              {parseDetailDoc.key_points && parseDetailDoc.key_points.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-medium text-gray-500 mb-2">关键要点</h4>
+                  <ul className="list-disc list-inside space-y-1">
+                    {parseDetailDoc.key_points.map((point: string, idx: number) => (
+                      <li key={idx} className="text-gray-700">{point}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {parseDetailDoc.keywords && parseDetailDoc.keywords.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-medium text-gray-500 mb-2">关键词</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {parseDetailDoc.keywords.map((keyword: string, idx: number) => (
+                      <span key={idx} className="px-2 py-1 bg-blue-100 text-blue-700 text-sm rounded">
+                        {keyword}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {parseDetailDoc.category_hint && (
+                <div>
+                  <h4 className="text-sm font-medium text-gray-500 mb-1">建议分类</h4>
+                  <span className="inline-block px-2 py-1 bg-green-100 text-green-700 text-sm rounded">
+                    {parseDetailDoc.category_hint}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         </div>
