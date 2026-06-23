@@ -329,7 +329,7 @@ const KnowledgeBase: React.FC = () => {
   const openDocumentModal = (doc?: KnowledgeDocument) => {
     if (doc) {
       setEditingDoc(doc);
-      setEditFileName(doc.file_name || doc.title || '');  // 独立存储文件名
+      setEditFileName(doc.title || '');  // 使用 title 作为文件名
       setDocumentFormData({
         title: doc.title || '',
         content: doc.content || '',

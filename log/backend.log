@@ -408,3 +408,15 @@ INFO:     100.127.90.177:0 - "GET /api/knowledge/documents?company_id=19c7bdd8-6
 INFO:     100.127.78.82:0 - "GET /api/knowledge/companies HTTP/1.1" 200 OK
 INFO:     100.127.80.198:0 - "GET /api/knowledge/folders?company_id=19c7bdd8-632d-4be2-987c-1a502bae01b0 HTTP/1.1" 200 OK
 INFO:     100.127.66.203:0 - "GET /api/knowledge/documents?company_id=19c7bdd8-632d-4be2-987c-1a502bae01b0 HTTP/1.1" 200 OK
+INFO:     100.127.74.42:0 - "GET /api/knowledge/companies HTTP/1.1" 200 OK
+INFO:     100.127.67.149:0 - "GET /api/knowledge/documents?company_id=19c7bdd8-632d-4be2-987c-1a502bae01b0 HTTP/1.1" 200 OK
+INFO:     100.127.68.35:0 - "GET /api/knowledge/folders?company_id=19c7bdd8-632d-4be2-987c-1a502bae01b0 HTTP/1.1" 200 OK
+INFO:     100.127.78.82:0 - "GET /api/knowledge/companies HTTP/1.1" 200 OK
+INFO:     100.127.74.128:0 - "GET /api/knowledge/folders?company_id=19c7bdd8-632d-4be2-987c-1a502bae01b0 HTTP/1.1" 200 OK
+INFO:     100.127.68.35:0 - "GET /api/knowledge/documents?company_id=19c7bdd8-632d-4be2-987c-1a502bae01b0 HTTP/1.1" 200 OK
+INFO:     100.127.68.97:0 - "GET /api/knowledge/companies HTTP/1.1" 200 OK
+INFO:     100.127.71.239:0 - "GET /api/knowledge/folders?company_id=19c7bdd8-632d-4be2-987c-1a502bae01b0 HTTP/1.1" 200 OK
+INFO:     100.127.71.239:0 - "GET /api/knowledge/documents?company_id=19c7bdd8-632d-4be2-987c-1a502bae01b0 HTTP/1.1" 200 OK
+INFO:     100.127.79.218:0 - "GET /api/knowledge/companies HTTP/1.1" 200 OK
+INFO:     100.127.82.78:0 - "GET /api/knowledge/folders?company_id=19c7bdd8-632d-4be2-987c-1a502bae01b0 HTTP/1.1" 200 OK
+INFO:     100.127.71.214:0 - "GET /api/knowledge/documents?company_id=19c7bdd8-632d-4be2-987c-1a502bae01b0 HTTP/1.1" 200 OK
