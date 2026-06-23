@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 
 // 创建一个简单的事件总线用于确认对话框
-type ConfirmCallback = () => void;
+type ConfirmCallback = () => void | Promise<void>;
 
 interface ConfirmEvent {
   title: string;
@@ -23,8 +23,8 @@ export function showConfirm(options: {
       onCancel: () => {
         resolve();
       },
-      onConfirm: () => {
-        options.onConfirm();
+      onConfirm: async () => {
+        await options.onConfirm();
         resolve();
       },
     };
@@ -41,6 +41,10 @@ export function useConfirmDialog(
     const handler = (event: ConfirmEvent) => {
       setConfirmDialog({
         ...event,
+        onConfirm: async () => {
+          await event.onConfirm();
+          setConfirmDialog(null);
+        },
         onCancel: () => {
           setConfirmDialog(null);
         },
