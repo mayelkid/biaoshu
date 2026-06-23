@@ -340,7 +340,13 @@ async def parse_document(
         raise HTTPException(status_code=404, detail="文档不存在")
     
     # 解析文档
-    summary = await parser_service.parse_document(document_id)
+    summary = await parser_service.parse_document(
+        doc.id,
+        doc.company_id,
+        doc.file_path,
+        doc.file_type,
+        doc.title
+    )
     if not summary:
         raise HTTPException(status_code=500, detail="文档解析失败")
     
