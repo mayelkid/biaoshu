@@ -1,1 +1,2 @@
-/log
+log/backend.log
+log/frontend.log
