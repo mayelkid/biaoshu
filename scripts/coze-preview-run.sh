@@ -26,4 +26,4 @@ sleep 3
 
 # 启动 CRA 开发服务器（5000端口），通过 setupProxy.js 代理 /api 到后端
 cd frontend
-exec pnpm run start > $LOG_DIR/frontend.log 2>&1 &
+exec pnpm run dev > $LOG_DIR/frontend.log 2>&1 &
