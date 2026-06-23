@@ -504,7 +504,18 @@ const KnowledgeBase: React.FC = () => {
       onConfirm: async () => {
         try {
           await knowledgeApi.deleteDocument(doc.id);
+          // 刷新文档列表
           loadDocuments();
+          // 如果是在文件夹弹窗中删除，刷新文件夹内文档
+          if (viewingFolder) {
+            const response = await knowledgeApi.listDocuments(viewingFolder.id);
+            setFolderDocuments(response.documents || []);
+          }
+          // 刷新文件夹列表（更新资料数量）
+          if (selectedCompany) {
+            const response = await knowledgeApi.listFolders(selectedCompany.id);
+            setFolders(response.folders || []);
+          }
           toast.success('删除成功');
         } catch (error) {
           console.error('删除失败:', error);
