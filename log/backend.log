@@ -121,3 +121,78 @@ INFO:     100.127.68.97:0 - "GET /api/knowledge/documents?company_id=19c7bdd8-63
 INFO:     100.127.64.104:0 - "GET /api/knowledge/companies HTTP/1.1" 200 OK
 INFO:     100.127.80.198:0 - "GET /api/knowledge/folders?company_id=19c7bdd8-632d-4be2-987c-1a502bae01b0 HTTP/1.1" 200 OK
 INFO:     100.127.64.123:0 - "GET /api/knowledge/documents?company_id=19c7bdd8-632d-4be2-987c-1a502bae01b0 HTTP/1.1" 200 OK
+INFO:     100.127.70.239:0 - "GET /api/knowledge/companies HTTP/1.1" 200 OK
+INFO:     100.127.92.101:0 - "GET /api/knowledge/folders?company_id=19c7bdd8-632d-4be2-987c-1a502bae01b0 HTTP/1.1" 200 OK
+INFO:     100.127.80.228:0 - "GET /api/knowledge/documents?company_id=19c7bdd8-632d-4be2-987c-1a502bae01b0 HTTP/1.1" 200 OK
+INFO:     100.127.88.170:0 - "GET /8c6976e5b5410415/knowledge/19c7bdd8-632d-4be2-987c-1a502bae01b0/%E4%B8%93%E5%88%A9%E8%AF%81%E4%B9%A6.pdf HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/workspace/projects/backend/venv/lib/python3.12/site-packages/starlette/responses.py", line 353, in __call__
+    stat_result = await anyio.to_thread.run_sync(os.stat, self.path)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/projects/backend/venv/lib/python3.12/site-packages/anyio/to_thread.py", line 63, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/projects/backend/venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 2592, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "/workspace/projects/backend/venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 1029, in run
+    result = context.run(func, *args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/workspace/projects/backend/static/index.html'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/workspace/projects/backend/venv/lib/python3.12/site-packages/uvicorn/protocols/http/httptools_impl.py", line 409, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/projects/backend/venv/lib/python3.12/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/projects/backend/venv/lib/python3.12/site-packages/fastapi/applications.py", line 1054, in __call__
+    await super().__call__(scope, receive, send)
+  File "/workspace/projects/backend/venv/lib/python3.12/site-packages/starlette/applications.py", line 113, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/workspace/projects/backend/venv/lib/python3.12/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/workspace/projects/backend/venv/lib/python3.12/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/workspace/projects/backend/venv/lib/python3.12/site-packages/starlette/middleware/cors.py", line 85, in __call__
+    await self.app(scope, receive, send)
+  File "/workspace/projects/backend/venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/workspace/projects/backend/venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/workspace/projects/backend/venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/workspace/projects/backend/venv/lib/python3.12/site-packages/starlette/routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/workspace/projects/backend/venv/lib/python3.12/site-packages/starlette/routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "/workspace/projects/backend/venv/lib/python3.12/site-packages/starlette/routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "/workspace/projects/backend/venv/lib/python3.12/site-packages/starlette/routing.py", line 78, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/workspace/projects/backend/venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/workspace/projects/backend/venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/workspace/projects/backend/venv/lib/python3.12/site-packages/starlette/routing.py", line 76, in app
+    await response(scope, receive, send)
+  File "/workspace/projects/backend/venv/lib/python3.12/site-packages/starlette/responses.py", line 356, in __call__
+    raise RuntimeError(f"File at path {self.path} does not exist.")
+RuntimeError: File at path /workspace/projects/backend/static/index.html does not exist.
+INFO:     100.127.64.90:0 - "GET /api/knowledge/documents/e6ff4601-9b38-475b-8a9d-be7d4b2b19c6/download HTTP/1.1" 200 OK
+INFO:     100.127.80.147:0 - "GET /api/knowledge/companies HTTP/1.1" 200 OK
+INFO:     100.127.68.97:0 - "GET /api/knowledge/folders?company_id=19c7bdd8-632d-4be2-987c-1a502bae01b0 HTTP/1.1" 200 OK
+INFO:     100.127.70.239:0 - "GET /api/knowledge/documents?company_id=19c7bdd8-632d-4be2-987c-1a502bae01b0 HTTP/1.1" 200 OK
+INFO:     100.127.78.81:0 - "GET /api/knowledge/companies HTTP/1.1" 200 OK
+INFO:     100.127.64.123:0 - "GET /api/knowledge/folders?company_id=19c7bdd8-632d-4be2-987c-1a502bae01b0 HTTP/1.1" 200 OK
+INFO:     100.127.74.221:0 - "GET /api/knowledge/documents?company_id=19c7bdd8-632d-4be2-987c-1a502bae01b0 HTTP/1.1" 200 OK
+INFO:     100.127.94.126:0 - "GET /api/knowledge/companies HTTP/1.1" 200 OK
+INFO:     100.127.70.1:0 - "GET /api/knowledge/documents?company_id=19c7bdd8-632d-4be2-987c-1a502bae01b0 HTTP/1.1" 200 OK
+INFO:     100.127.82.206:0 - "GET /api/knowledge/folders?company_id=19c7bdd8-632d-4be2-987c-1a502bae01b0 HTTP/1.1" 200 OK
+INFO:     100.127.67.149:0 - "GET /api/knowledge/companies HTTP/1.1" 200 OK
+INFO:     100.127.66.203:0 - "GET /api/knowledge/folders?company_id=19c7bdd8-632d-4be2-987c-1a502bae01b0 HTTP/1.1" 200 OK
+INFO:     100.127.80.147:0 - "GET /api/knowledge/documents?company_id=19c7bdd8-632d-4be2-987c-1a502bae01b0 HTTP/1.1" 200 OK

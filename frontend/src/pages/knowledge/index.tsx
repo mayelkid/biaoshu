@@ -1299,13 +1299,6 @@ const KnowledgeBase: React.FC = () => {
                         <DocumentIcon className="w-16 h-16 mb-4" />
                         <p className="text-lg mb-2">该文件类型暂不支持预览</p>
                         <p className="text-sm">文件名：{previewDoc.file_name}</p>
-                        <a
-                          href={fileUrl}
-                          download={previewDoc.file_name}
-                          className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-                        >
-                          下载文件
-                        </a>
                       </div>
                     );
                 }
