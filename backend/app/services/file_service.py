@@ -38,42 +38,36 @@ class FileService:
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     }
 
-    # 图片上传配置
-    IMAGE_UPLOAD_URL = "https://mt.agnet.top/image/upload"
-    IMAGE_UPLOAD_TIMEOUT = 30  # 超时时间（秒）
-
     @staticmethod
-    def is_supported_document(content_type: str | None) -> bool:
-        """判断上传文件类型是否受支持。"""
-        return bool(content_type and content_type in FileService.ALLOWED_DOCUMENT_TYPES)
-
-    @staticmethod
-    async def upload_image_to_server(image_data: bytes, filename: str) -> Optional[str]:
-        """上传图片到外部服务器"""
+    async def save_image_locally(image_data: bytes, filename: str) -> Optional[str]:
+        """将图片保存到本地 uploads 目录"""
         try:
-            # 准备multipart/form-data格式的数据
-            form_data = aiohttp.FormData()
-            form_data.add_field(
-                "file",
-                io.BytesIO(image_data),
-                filename=filename,
-                content_type="image/jpeg",
-            )
-
-            timeout = aiohttp.ClientTimeout(total=FileService.IMAGE_UPLOAD_TIMEOUT)
-            async with aiohttp.ClientSession(timeout=timeout) as session:
-                async with session.post(
-                    FileService.IMAGE_UPLOAD_URL, data=form_data
-                ) as response:
-                    if response.status == 200:
-                        result = await response.json()
-                        # 根据实际API返回格式获取图片URL
-                        return result.get("file_url")
-                    else:
-                        logger.warning("图片上传失败，状态码: %s", response.status)
-                        return None
+            import uuid
+            from datetime import datetime
+            
+            # 创建图片目录
+            image_dir = os.path.join(settings.upload_dir, "images")
+            os.makedirs(image_dir, exist_ok=True)
+            
+            # 生成唯一文件名
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            unique_id = str(uuid.uuid4())[:8]
+            name, ext = os.path.splitext(filename)
+            if not ext:
+                ext = ".jpg"
+            new_filename = f"{name}_{timestamp}_{unique_id}{ext}"
+            
+            # 保存文件
+            file_path = os.path.join(image_dir, new_filename)
+            async with aiofiles.open(file_path, "wb") as f:
+                await f.write(image_data)
+            
+            # 返回相对路径，前端通过 /uploads/images/xxx 访问
+            relative_path = f"images/{new_filename}"
+            logger.info(f"图片已保存到本地: {relative_path}")
+            return relative_path
         except Exception as e:
-            logger.warning("图片上传异常: %s", e)
+            logger.warning("图片保存失败: %s", e)
             return None
 
     @staticmethod
@@ -274,7 +268,7 @@ class FileService:
 
                                     # 上传图片
                                     image_url = (
-                                        await FileService.upload_image_to_server(
+                                        await FileService.save_image_locally(
                                             img_data, filename
                                         )
                                     )
@@ -440,7 +434,7 @@ class FileService:
                                                 filename = f"docx_img{global_img_counter}.{ext}"
 
                                                 # 上传图片
-                                                image_url = await FileService.upload_image_to_server(
+                                                image_url = await FileService.save_image_locally(
                                                     img_data, filename
                                                 )
 
@@ -517,7 +511,7 @@ class FileService:
                                 filename = f"docx_img{global_img_counter}.{ext}"
 
                                 # 上传图片
-                                image_url = await FileService.upload_image_to_server(
+                                image_url = await FileService.save_image_locally(
                                     img_data, filename
                                 )
 
