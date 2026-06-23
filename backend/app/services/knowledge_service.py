@@ -202,6 +202,8 @@ class KnowledgeService:
             if doc.id == doc_id:
                 if request.title is not None:
                     doc.title = request.title
+                if request.file_name is not None:
+                    doc.file_name = request.file_name
                 if request.content is not None:
                     doc.content = request.content
                 if request.category is not None:

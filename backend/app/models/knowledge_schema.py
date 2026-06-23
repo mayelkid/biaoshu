@@ -94,6 +94,7 @@ class CreateDocumentRequest(BaseModel):
 class UpdateDocumentRequest(BaseModel):
     """更新文档请求"""
     title: Optional[str] = Field(None, description="文档标题")
+    file_name: Optional[str] = Field(None, description="文件名")
     content: Optional[str] = Field(None, description="文档内容")
     category: Optional[DocumentCategory] = Field(None, description="文档分类")
     tags: Optional[List[str]] = Field(None, description="标签列表")

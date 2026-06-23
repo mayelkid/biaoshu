@@ -327,7 +327,7 @@ const KnowledgeBase: React.FC = () => {
     if (doc) {
       setEditingDoc(doc);
       setDocumentFormData({
-        title: doc.title,
+        title: doc.file_name || doc.title,  // 优先使用文件名
         content: doc.content || '',
         category: doc.category,
         documentType: doc.document_type,
@@ -358,15 +358,9 @@ const KnowledgeBase: React.FC = () => {
 
   // 保存文档
   const handleSaveDocument = async () => {
-    // 文本类型需要内容
-    // 文件上传是必填项，其他字段可为空
-    if (uploadFiles.length === 0) {
-      toast.error('请选择至少一个文件');
-      return;
-    }
-
     try {
       if (editingDoc) {
+        // 编辑模式：不需要文件，只更新元数据
         await knowledgeApi.updateDocument(editingDoc.id, {
           title: documentFormData.title,
           content: documentFormData.documentType === 'text' ? documentFormData.content : undefined,
@@ -375,7 +369,11 @@ const KnowledgeBase: React.FC = () => {
           description: documentFormData.description,
         });
       } else {
-        // 使用 uploadFiles 上传（文件必填，其他字段可为空）
+        // 新建模式：文件是必填项
+        if (uploadFiles.length === 0) {
+          toast.error('请选择至少一个文件');
+          return;
+        }
         await knowledgeApi.uploadFiles(
           documentFormData.category,
           uploadFiles,
@@ -839,15 +837,6 @@ const KnowledgeBase: React.FC = () => {
                       </div>
                     )}
 
-                    {doc.document_type !== 'text' && doc.file_name && (
-                      <button
-                        onClick={() => handleDownload(doc)}
-                        className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700"
-                      >
-                        <ArrowDownTrayIcon className="w-4 h-4" />
-                        下载文件
-                      </button>
-                    )}
 
                     <div className="mt-3 pt-3 border-t border-gray-100 text-xs text-gray-400">
                       更新于 {formatTime(doc.updated_at)}
@@ -937,6 +926,20 @@ const KnowledgeBase: React.FC = () => {
 
             <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
               <div className="space-y-4">
+
+                {/* 文件名（仅编辑模式） */}
+                {editingDoc && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">文件名</label>
+                    <input
+                      type="text"
+                      value={documentFormData.title}
+                      onChange={(e) => setDocumentFormData({ ...documentFormData, title: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="请输入文件名"
+                    />
+                  </div>
+                )}
 
                 {/* 文件上传（多文件） */}
                 {!editingDoc && (
