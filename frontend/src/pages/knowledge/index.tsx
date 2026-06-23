@@ -194,8 +194,6 @@ const KnowledgeBase: React.FC = () => {
     if (companyId && companies.length > 0) {
       const foundCompany = companies.find(c => c.id === companyId);
       if (foundCompany && selectedCompany?.id !== companyId) {
-        setLoading(false);
-        setFolderLoading(false);
         setFolders([]);
         setDocuments([]);
         setFolderDocuments([]);
@@ -279,8 +277,6 @@ const KnowledgeBase: React.FC = () => {
   // 进入企业详情
   const enterCompany = (company: Company) => {
     // 清空上次数据，避免闪现
-    setLoading(false);
-    setFolderLoading(false);
     setFolders([]);
     setDocuments([]);
     setFolderDocuments([]);
