@@ -146,8 +146,8 @@ async def get_document(
 @router.post("/documents", response_model=DocumentListResponse)
 async def create_document(
     title: Optional[str] = Form(None),
-    category: DocumentCategory = Form(...),
-    document_type: str = Form("file"),
+    category: Optional[DocumentCategory] = Form(None),
+    document_type: Optional[str] = Form(None),
     company_id: Optional[str] = Form(None),
     folder_id: Optional[str] = Form(None),
     description: Optional[str] = Form(None),
@@ -167,7 +167,7 @@ async def create_document(
         request = CreateDocumentRequest(
             title=doc_title,
             category=category,
-            document_type=DocumentType(document_type),
+            document_type=DocumentType(document_type) if document_type else DocumentType.FILE,
             company_id=company_id,
             folder_id=folder_id if folder_id else None,
             description=description,
