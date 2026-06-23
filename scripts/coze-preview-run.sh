@@ -16,9 +16,9 @@ fuser -k 8000/tcp 2>/dev/null || true
 fuser -k 5000/tcp 2>/dev/null || true
 sleep 1
 
-# 启动后端服务（8000端口）
+# 启动后端服务（8000端口，使用虚拟环境）
 cd backend
-nohup python3 run.py > $LOG_DIR/backend.log 2>&1 &
+nohup venv/bin/python run.py > $LOG_DIR/backend.log 2>&1 &
 cd ..
 
 # 等待后端启动
