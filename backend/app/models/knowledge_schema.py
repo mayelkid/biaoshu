@@ -72,6 +72,7 @@ class KnowledgeDocument(BaseModel):
     description: Optional[str] = Field(None, description="文档描述")
     user_id: str = Field(..., description="用户ID")
     company_id: Optional[str] = Field(None, description="企业ID")
+    folder_id: Optional[str] = Field(None, description="文件夹ID")
     created_at: str = Field(..., description="创建时间")
     updated_at: str = Field(..., description="更新时间")
 
@@ -87,6 +88,7 @@ class CreateDocumentRequest(BaseModel):
     tags: Optional[List[str]] = Field([], description="标签列表")
     description: Optional[str] = Field(None, description="文档描述")
     company_id: Optional[str] = Field(None, description="企业ID")
+    folder_id: Optional[str] = Field(None, description="文件夹ID")
 
 
 class UpdateDocumentRequest(BaseModel):

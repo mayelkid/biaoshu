@@ -46,6 +46,7 @@ const KnowledgeBase: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [keyword, setKeyword] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<DocumentCategory | ''>('');
+  const [currentFolder, setCurrentFolder] = useState<Folder | null>(null); // 当前查看的文件夹
 
   // 企业弹窗
   const [showCompanyModal, setShowCompanyModal] = useState(false);
@@ -107,7 +108,8 @@ const KnowledgeBase: React.FC = () => {
       const response = await knowledgeApi.listDocuments(
         keyword || undefined,
         selectedCategory || undefined,
-        selectedCompany.id
+        selectedCompany.id,
+        currentFolder?.id
       );
       if (response.success) {
         setDocuments(response.documents);
@@ -145,7 +147,14 @@ const KnowledgeBase: React.FC = () => {
       loadDocuments();
       loadFolders();
     }
-  }, [keyword, selectedCategory, selectedCompany]);
+  }, [keyword, selectedCategory, selectedCompany, currentFolder]);
+
+  // 当进入文件夹时，不加载文件夹列表
+  useEffect(() => {
+    if (selectedCompany && currentFolder) {
+      loadDocuments();
+    }
+  }, [currentFolder]);
 
   useEffect(() => {
     if (companyId && companies.length > 0) {
@@ -240,8 +249,22 @@ const KnowledgeBase: React.FC = () => {
   // 返回企业列表
   const backToCompanyList = () => {
     setSelectedCompany(null);
+    setCurrentFolder(null);
     setViewMode('company-list');
     navigate('/knowledge');
+  };
+
+  // 返回企业详情（从文件夹返回）
+  const backToCompanyDetail = () => {
+    setCurrentFolder(null);
+    loadDocuments();
+    loadFolders();
+  };
+
+  // 进入文件夹
+  const enterFolder = (folder: Folder) => {
+    setCurrentFolder(folder);
+    loadDocuments();
   };
 
   // 获取文档图标
@@ -326,7 +349,8 @@ const KnowledgeBase: React.FC = () => {
             uploadFile,
             selectedCompany?.id,
             documentFormData.description,
-            documentFormData.tags.split(',').map((t) => t.trim()).filter(Boolean)
+            documentFormData.tags.split(',').map((t) => t.trim()).filter(Boolean),
+            currentFolder?.id
           );
         }
       }
@@ -538,17 +562,24 @@ const KnowledgeBase: React.FC = () => {
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-4">
                 <button
-                  onClick={backToCompanyList}
+                  onClick={currentFolder ? backToCompanyDetail : backToCompanyList}
                   className="flex items-center gap-1 text-gray-600 hover:text-gray-900 transition-colors"
                 >
                   <ChevronLeftIcon className="w-5 h-5" />
                   返回
                 </button>
                 <div className="h-6 w-px bg-gray-300" />
-                <div className="flex items-center gap-2">
-                  <BuildingOfficeIcon className="w-6 h-6 text-blue-600" />
-                  <h2 className="text-xl font-semibold text-gray-900">{selectedCompany.name}</h2>
-                </div>
+                {currentFolder ? (
+                  <div className="flex items-center gap-2">
+                    <FolderIcon className="w-6 h-6 text-amber-600" />
+                    <h2 className="text-xl font-semibold text-gray-900">{currentFolder.name}</h2>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <BuildingOfficeIcon className="w-6 h-6 text-blue-600" />
+                    <h2 className="text-xl font-semibold text-gray-900">{selectedCompany.name}</h2>
+                  </div>
+                )}
                 <span className="text-sm text-gray-500">共 {documents.length} 份资料</span>
               </div>
               
@@ -618,7 +649,8 @@ const KnowledgeBase: React.FC = () => {
                   {folders.map((folder) => (
                     <div
                       key={folder.id}
-                      className="bg-amber-50 border border-amber-200 rounded-lg p-3 hover:shadow-sm transition-shadow"
+                      className="bg-amber-50 border border-amber-200 rounded-lg p-3 hover:shadow-sm transition-shadow cursor-pointer"
+                      onClick={() => enterFolder(folder)}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
@@ -626,7 +658,10 @@ const KnowledgeBase: React.FC = () => {
                           <span className="font-medium text-gray-800 truncate">{folder.name}</span>
                         </div>
                         <button
-                          onClick={() => handleDeleteFolder(folder)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteFolder(folder);
+                          }}
                           className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
                           title="删除"
                         >

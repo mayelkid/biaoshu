@@ -164,6 +164,7 @@ class KnowledgeService:
             tags=request.tags or [],
             description=request.description,
             company_id=request.company_id,
+            folder_id=request.folder_id,
             file_path=file_info.get("file_path") if file_info else None,
             file_name=file_info.get("file_name") if file_info else None,
             user_id=user_id,
@@ -233,13 +234,22 @@ class KnowledgeService:
         return False
 
     def search_documents(
-        self, user_id: str, keyword: str = "", category: str = "", company_id: str = ""
+        self, user_id: str, keyword: str = "", category: str = "", company_id: str = "", folder_id: str = ""
     ) -> List[KnowledgeDocument]:
         """搜索文档"""
         documents = self._load_documents(user_id)
         
         if company_id:
             documents = [doc for doc in documents if doc.company_id == company_id]
+        
+        if folder_id:
+            documents = [doc for doc in documents if doc.folder_id == folder_id]
+        elif not company_id:
+            # 如果没有指定 folder_id 且没有指定 company_id，返回所有文档
+            pass
+        else:
+            # 如果指定了 company_id 但没有指定 folder_id，返回根目录文档（folder_id 为空）
+            documents = [doc for doc in documents if not doc.folder_id]
         
         if keyword:
             keyword = keyword.lower()

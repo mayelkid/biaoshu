@@ -1,9 +1,10 @@
 """知识库路由"""
 
+import json
 import os
-from typing import List
+from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Query, Cookie
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Query, Cookie, Form
 from fastapi.responses import FileResponse
 
 from app.models.knowledge_schema import (
@@ -118,11 +119,12 @@ async def list_documents(
     keyword: str = Query("", description="搜索关键词"),
     category: str = Query("", description="文档分类"),
     company_id: str = Query("", description="企业ID"),
+    folder_id: str = Query("", description="文件夹ID"),
     user_id: str = Depends(get_current_user_id),
     knowledge_service: KnowledgeService = Depends(get_knowledge_service),
 ):
     """获取文档列表"""
-    documents = knowledge_service.search_documents(user_id, keyword, category, company_id)
+    documents = knowledge_service.search_documents(user_id, keyword, category, company_id, folder_id)
     return DocumentListResponse(documents=documents)
 
 
@@ -142,12 +144,29 @@ async def get_document(
 
 @router.post("/documents", response_model=DocumentResponse)
 async def create_document(
-    request: CreateDocumentRequest = Depends(),
+    title: str = Form(...),
+    category: DocumentCategory = Form(...),
+    document_type: str = Form("file"),
+    company_id: Optional[str] = Form(None),
+    folder_id: Optional[str] = Form(None),
+    description: Optional[str] = Form(None),
+    tags: Optional[str] = Form(None),
     file: UploadFile = File(None),
     user_id: str = Depends(get_current_user_id),
     knowledge_service: KnowledgeService = Depends(get_knowledge_service),
 ):
     """创建文档"""
+    # 构建请求对象
+    request = CreateDocumentRequest(
+        title=title,
+        category=category,
+        document_type=DocumentType(document_type),
+        company_id=company_id,
+        folder_id=folder_id if folder_id else None,
+        description=description,
+        tags=json.loads(tags) if tags else [],
+    )
+    
     file_info = None
     if file:
         # 保存上传的文件

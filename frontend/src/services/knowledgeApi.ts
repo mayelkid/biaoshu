@@ -50,6 +50,7 @@ export interface KnowledgeDocument {
   description?: string;
   user_id: string;
   company_id?: string;
+  folder_id?: string;
   created_at: string;
   updated_at: string;
 }
@@ -62,6 +63,7 @@ export interface CreateDocumentRequest {
   tags?: string[];
   description?: string;
   company_id?: string;
+  folder_id?: string;
 }
 
 export interface UpdateDocumentRequest {
@@ -178,12 +180,13 @@ export const knowledgeApi = {
   // ========== 文档管理 ==========
 
   // 获取文档列表
-  async listDocuments(keyword?: string, category?: string, companyId?: string): Promise<DocumentListResponse> {
+  async listDocuments(keyword?: string, category?: string, companyId?: string, folderId?: string): Promise<DocumentListResponse> {
     try {
       const params: Record<string, string> = {};
       if (keyword) params.keyword = keyword;
       if (category) params.category = category;
       if (companyId) params.company_id = companyId;
+      if (folderId) params.folder_id = folderId;
       
       const response = await axios.get('/api/knowledge/documents', { params });
       return response.data;
@@ -219,7 +222,8 @@ export const knowledgeApi = {
     file: File,
     companyId?: string,
     description?: string,
-    tags?: string[]
+    tags?: string[],
+    folderId?: string
   ): Promise<DocumentResponse> {
     try {
       const formData = new FormData();
@@ -229,6 +233,7 @@ export const knowledgeApi = {
       if (companyId) formData.append('company_id', companyId);
       if (description) formData.append('description', description);
       if (tags && tags.length > 0) formData.append('tags', JSON.stringify(tags));
+      if (folderId) formData.append('folder_id', folderId);
       formData.append('file', file);
 
       const response = await axios.post('/api/knowledge/documents', formData, {
