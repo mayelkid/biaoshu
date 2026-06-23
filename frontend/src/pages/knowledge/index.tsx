@@ -137,7 +137,7 @@ const KnowledgeBase: React.FC = () => {
     } catch (error) {
       console.error('加载企业列表失败:', error);
     } finally {
-      setFolderLoading(false);
+      setLoading(false);
     }
   };
 
