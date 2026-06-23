@@ -308,7 +308,7 @@ const KnowledgeBase: React.FC = () => {
     } catch (error) {
       console.error('加载文件夹内容失败:', error);
     } finally {
-      setLoading(false);
+      setFolderLoading(false);
     }
   };
 
