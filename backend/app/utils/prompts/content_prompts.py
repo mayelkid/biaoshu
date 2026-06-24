@@ -2,12 +2,17 @@
 
 from typing import Any, Dict, List
 
+from app.utils.prompts.outline_prompts import _build_generation_preference_text
+
 
 def build_chapter_content_messages(
     chapter: Dict[str, Any],
     parent_chapters: List[Dict[str, Any]] | None = None,
     sibling_chapters: List[Dict[str, Any]] | None = None,
     project_overview: str = "",
+    min_pages: int = 20,
+    max_pages: int = 100,
+    table_preference: str = "medium",
 ) -> List[Dict[str, str]]:
     """构建章节正文生成消息。"""
     chapter_id = chapter.get("id", "unknown")
@@ -66,5 +71,7 @@ def build_chapter_content_messages(
 直接返回编写的正文内容，不要输出标题、解释、总结等任何其他内容""",
         }
     )
+
+    messages.append({"role": "user", "content": _build_generation_preference_text(min_pages, max_pages, table_preference)})
 
     return messages

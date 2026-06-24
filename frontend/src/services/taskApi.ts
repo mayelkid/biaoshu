@@ -18,12 +18,18 @@ export interface ProposalTask {
   createdAt: string;
   updatedAt: string;
   userId: string;
+  companyId?: string;
+  // 生成偏好
+  minPages?: number;
+  maxPages?: number;
+  tablePreference?: 'none' | 'medium' | 'heavy';
 }
 
 // 创建任务请求
 export interface CreateTaskRequest {
   name: string;
   description?: string;
+  company_id?: string;
 }
 
 // 更新任务请求
@@ -37,6 +43,11 @@ export interface UpdateTaskRequest {
   currentStep?: number;
   status?: string;
   progress?: number;
+  companyId?: string;
+  // 生成偏好
+  minPages?: number;
+  maxPages?: number;
+  tablePreference?: 'none' | 'medium' | 'heavy';
 }
 
 export interface OutlineItem {

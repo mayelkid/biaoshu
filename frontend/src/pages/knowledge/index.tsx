@@ -21,6 +21,11 @@ import {
   ChevronLeftIcon,
   ArrowUpTrayIcon,
   EyeIcon,
+  ChartPieIcon,
+  ArrowPathIcon,
+  ShieldCheckIcon,
+  ExclamationTriangleIcon,
+  InformationCircleIcon,
 } from '@heroicons/react/24/outline';
 import {
   knowledgeApi,
@@ -31,6 +36,9 @@ import {
   typeLabels,
   Company,
   Folder,
+  CompanyEvaluationResult,
+  evaluationStatusLabels,
+  evaluationStatusColors,
 } from '../../services/knowledgeApi';
 
 type ViewMode = 'company-list' | 'company-detail';
@@ -96,6 +104,13 @@ const KnowledgeBase: React.FC = () => {
   const [parseDetailDoc, setParseDetailDoc] = useState<KnowledgeDocument | null>(null);
   const [parseDetailLoading, setParseDetailLoading] = useState(false);
   
+  // 企业评估
+  const [evaluations, setEvaluations] = useState<Record<string, CompanyEvaluationResult>>({});
+  const [evaluatingCompanies, setEvaluatingCompanies] = useState<Set<string>>(new Set());
+  const [showEvaluationModal, setShowEvaluationModal] = useState(false);
+  const [selectedEvaluationCompany, setSelectedEvaluationCompany] = useState<Company | null>(null);
+  const [evaluationDetail, setEvaluationDetail] = useState<CompanyEvaluationResult | null>(null);
+  
   // 获取文件预览URL
   const getPreviewUrl = (doc: KnowledgeDocument): string => {
     if (!doc.file_path) return '';
@@ -132,17 +147,31 @@ const KnowledgeBase: React.FC = () => {
   };
 
   // 主动触发解析
-  const handleTriggerParse = async (doc: KnowledgeDocument) => {
-    if (!window.confirm(`确定要对"${doc.title}"发起 AI 解析吗？`)) return;
-    
+  const performParseOperation = async (doc: KnowledgeDocument) => {
+    setParseDetailLoading(true); // 设置加载状态
+    const toastId = toast.loading('文档解析中...', { duration: Infinity }); // 显示持久加载提示
+
     try {
       await knowledgeApi.parseDocument(doc.id);
-      toast.success('解析任务已提交');
+      toast.success('解析任务已提交', { id: toastId, duration: 4000 }); // 更新为成功提示，并设置4秒后自动关闭
       // 刷新文档列表
       loadDocuments();
     } catch (error) {
-      toast.error('解析失败');
+        console.error('解析失败:', error);
+        toast.error('解析失败', { id: toastId, duration: 4000 }); // 更新为错误提示，并设置4秒后自动关闭
+    } finally {
+      setParseDetailLoading(false); // 清除加载状态
     }
+  };
+
+  const handleTriggerParse = async (doc: KnowledgeDocument) => {
+    await showConfirm({
+      title: '确认解析',
+      message: `确定要对"${doc.title}"发起 AI 解析吗？这可能需要一些时间。`,
+      onConfirm: () => {
+        performParseOperation(doc);
+      },
+    });
   };
 
   const companiesLoadedRef = useRef(false);
@@ -154,6 +183,22 @@ const KnowledgeBase: React.FC = () => {
       const response = await knowledgeApi.listCompanies();
       if (response.success) {
         setCompanies(response.companies);
+        
+        // 并行加载每个企业的评估结果
+        const evalMap: Record<string, CompanyEvaluationResult> = {};
+        await Promise.all(
+          response.companies.map(async (company) => {
+            try {
+              const evalResponse = await knowledgeApi.getCompanyEvaluation(company.id);
+              if (evalResponse.success && evalResponse.result) {
+                evalMap[company.id] = evalResponse.result;
+              }
+            } catch {
+              // 忽略单个企业评估加载失败
+            }
+          })
+        );
+        setEvaluations(evalMap);
         
         // 如果路由中有 companyId，自动查找并进入企业详情
         if (companyId) {
@@ -169,6 +214,72 @@ const KnowledgeBase: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // 发起企业评估
+  const handleEvaluateCompany = async (company: Company, event?: React.MouseEvent) => {
+    if (event) {
+      event.stopPropagation();
+    }
+    setEvaluatingCompanies(prev => new Set(prev).add(company.id));
+    const toastId = toast.loading(`正在评估"${company.name}"的资料完善度...`, { duration: Infinity });
+    
+    try {
+      const response = await knowledgeApi.evaluateCompany(company.id);
+      if (response.success && response.result) {
+        setEvaluations(prev => ({ ...prev, [company.id]: response.result! }));
+        toast.success(`"${company.name}"资料完善度评估完成：${response.result.completeness_percentage}%`, {
+          id: toastId,
+          duration: 4000,
+        });
+      } else {
+        toast.error(response.message || '评估失败', { id: toastId, duration: 4000 });
+      }
+    } catch (error) {
+      console.error('评估失败:', error);
+      toast.error('评估失败，请稍后重试', { id: toastId, duration: 4000 });
+    } finally {
+      setEvaluatingCompanies(prev => {
+        const next = new Set(prev);
+        next.delete(company.id);
+        return next;
+      });
+    }
+  };
+
+  // 打开评估详情弹窗
+  const handleOpenEvaluationDetail = (company: Company, event?: React.MouseEvent) => {
+    if (event) {
+      event.stopPropagation();
+    }
+    const evalResult = evaluations[company.id];
+    if (evalResult) {
+      setSelectedEvaluationCompany(company);
+      setEvaluationDetail(evalResult);
+      setShowEvaluationModal(true);
+    } else {
+      // 没有评估结果，直接发起评估
+      handleEvaluateCompany(company);
+    }
+  };
+
+  // 获取完善度颜色
+  const getCompletenessColor = (percentage: number): string => {
+    if (percentage >= 80) return 'text-green-600';
+    if (percentage >= 50) return 'text-yellow-600';
+    return 'text-red-600';
+  };
+
+  const getCompletenessBgColor = (percentage: number): string => {
+    if (percentage >= 80) return 'bg-green-50 border-green-200';
+    if (percentage >= 50) return 'bg-yellow-50 border-yellow-200';
+    return 'bg-red-50 border-red-200';
+  };
+
+  const getCompletenessRingColor = (percentage: number): string => {
+    if (percentage >= 80) return 'text-green-500';
+    if (percentage >= 50) return 'text-yellow-500';
+    return 'text-red-500';
   };
 
   // 加载文档列表
@@ -644,55 +755,101 @@ const KnowledgeBase: React.FC = () => {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {companies.map((company) => (
-                  <div
-                    key={company.id}
-                    onClick={() => enterCompany(company)}
-                    className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg hover:border-blue-300 cursor-pointer transition-all"
-                  >
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                          <BuildingOfficeIcon className="w-6 h-6 text-blue-600" />
+                {companies.map((company) => {
+                  const evalResult = evaluations[company.id];
+                  const isEvaluating = evaluatingCompanies.has(company.id);
+                  const percentage = evalResult?.completeness_percentage ?? null;
+                  
+                  return (
+                    <div
+                      key={company.id}
+                      onClick={() => enterCompany(company)}
+                      className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg hover:border-blue-300 cursor-pointer transition-all"
+                    >
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <BuildingOfficeIcon className="w-6 h-6 text-blue-600" />
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-gray-900">{company.name}</h3>
+                            <p className="text-sm text-gray-500">{company.document_count} 份资料</p>
+                          </div>
                         </div>
-                        <div>
-                          <h3 className="font-semibold text-gray-900">{company.name}</h3>
-                          <p className="text-sm text-gray-500">{company.document_count} 份资料</p>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openCompanyModal(company);
+                            }}
+                            className="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                            title="编辑"
+                          >
+                            <PencilSquareIcon className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteCompany(company);
+                            }}
+                            className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                            title="删除"
+                          >
+                            <TrashIcon className="w-4 h-4" />
+                          </button>
                         </div>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            openCompanyModal(company);
-                          }}
-                          className="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                          title="编辑"
-                        >
-                          <PencilSquareIcon className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteCompany(company);
-                          }}
-                          className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-                          title="删除"
-                        >
-                          <TrashIcon className="w-4 h-4" />
-                        </button>
+
+                      {company.description && (
+                        <p className="text-sm text-gray-600 line-clamp-2">{company.description}</p>
+                      )}
+
+                      <div className="flex items-center gap-4 mt-3 pt-3 border-t border-gray-100 ">
+
+                        {/* 资料完善度评估 */}
+                        <div className="flex-1">
+                          {isEvaluating ? (
+                            <div className={`flex items-center gap-2 px-3 py-2 rounded-lg border ${getCompletenessBgColor(0)}`}>
+                              <ArrowPathIcon className="w-4 h-4 animate-spin text-gray-500" />
+                              <span className="text-sm text-gray-600">正在评估资料完善度...</span>
+                            </div>
+                          ) : percentage !== null ? (
+                            <div
+                              className={`flex items-center justify-between px-3 py-2 rounded-lg border cursor-pointer hover:opacity-80 transition-opacity ${getCompletenessBgColor(percentage)}`}
+                              onClick={(e) => handleOpenEvaluationDetail(company, e)}
+                              title="点击查看评估详情"
+                            >
+                              <div className="flex items-center gap-2">
+                                <ChartPieIcon className={`w-4 h-4 ${getCompletenessRingColor(percentage)}`} />
+                                <span className="text-sm font-medium text-gray-700">资料完善度</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className={`text-lg font-bold ${getCompletenessColor(percentage)}`}>
+                                  {percentage}%
+                                </span>
+                                <InformationCircleIcon className="w-4 h-4 text-gray-400" />
+                              </div>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={(e) => handleEvaluateCompany(company, e)}
+                              disabled={isEvaluating}
+                              className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-dashed border-gray-300 text-gray-500 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-colors text-sm"
+                            >
+                              <ArrowPathIcon className="w-4 h-4" />
+                              评估资料完善度
+                            </button>
+                          )}
+                        </div>
+
+                        <div className="text-xs text-gray-400">
+                          更新于 {formatTime(company.updated_at)}
+                        </div>
+
                       </div>
                     </div>
-
-                    {company.description && (
-                      <p className="text-sm text-gray-600 line-clamp-2">{company.description}</p>
-                    )}
-
-                    <div className="mt-3 pt-3 border-t border-gray-100 text-xs text-gray-400">
-                      更新于 {formatTime(company.updated_at)}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -930,30 +1087,43 @@ const KnowledgeBase: React.FC = () => {
                       </div>
                     )}
 
+                    <div className="mt-3 pt-3 flex items-center gap-2 border-t border-gray-100">
+                      
+                      {/* 解析状态 */}
+                      
+                      {doc.summary && ( // 当 doc.summary 存在时
+                        <div className="mt-2 flex-1 flex items-center gap-2"> {/* 保持与“未解析”标签的样式一致，或根据需要调整 */}
+                            <span className="px-2 py-1 text-xs bg-green-100 text-green-700 rounded">
+                              已解析 {/* 显示“已解析”标签 */}
+                            </span>
+                            <button
+                              onClick={() => handleViewParseDetail(doc)} // 点击标签时调用解析详情
+                              className="text-xs text-blue-600 hover:text-blue-800"
+                              // 暂时不需要 disabled={parseDetailLoading}，因为这里是查看而不是触发解析
+                            >
+                              查看
+                            </button>
+                        </div>
+                      )}
+                      
+                      {!doc.summary && (
+                        <div className="mt-2 flex-1 flex items-center gap-2">
+                          <span className="px-2 py-1 text-xs bg-yellow-100 text-yellow-700 rounded">
+                            未解析
+                          </span>
+                          <button
+                            onClick={() => handleViewParseDetail(doc)}
+                            className="text-xs text-blue-600 hover:text-blue-800"
+                            disabled={parseDetailLoading}
+                          >
+                            {parseDetailLoading ? '解析中...' : '解析'}
+                          </button>
+                        </div>
+                      )}
 
-                    {doc.summary && (
-                      <p className="text-sm text-blue-600 mt-2 italic line-clamp-2 bg-blue-50 p-2 rounded cursor-pointer hover:bg-blue-100" onClick={() => handleViewParseDetail(doc)}>
-                        AI摘要：{doc.summary}
-                      </p>
-                    )}
-
-                    {/* 解析状态 */}
-                    {!doc.summary && (
-                      <div className="mt-2 flex items-center gap-2">
-                        <span className="px-2 py-1 text-xs bg-yellow-100 text-yellow-700 rounded">
-                          未解析
-                        </span>
-                        <button
-                          onClick={() => handleViewParseDetail(doc)}
-                          className="text-xs text-blue-600 hover:text-blue-800"
-                        >
-                          解析
-                        </button>
+                      <div className="text-xs text-gray-400">
+                        更新于 {formatTime(doc.updated_at)}
                       </div>
-                    )}
-
-                    <div className="mt-3 pt-3 border-t border-gray-100 text-xs text-gray-400">
-                      更新于 {formatTime(doc.updated_at)}
                     </div>
                   </div>
                 ))}
@@ -1545,6 +1715,168 @@ const KnowledgeBase: React.FC = () => {
                   </span>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 企业资料完善度评估详情弹窗 */}
+      {showEvaluationModal && selectedEvaluationCompany && evaluationDetail && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] flex flex-col">
+            {/* 标题栏 */}
+            <div className="flex items-center justify-between p-4 border-b">
+              <div className="flex items-center gap-3">
+                <ChartPieIcon className={`w-6 h-6 ${getCompletenessRingColor(evaluationDetail.completeness_percentage)}`} />
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">资料完善度评估</h3>
+                  <p className="text-sm text-gray-500">{selectedEvaluationCompany.name}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={async () => {
+                    setShowEvaluationModal(false);
+                    await handleEvaluateCompany(selectedEvaluationCompany);
+                  }}
+                  className="flex items-center gap-1 px-3 py-1.5 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                  title="重新评估"
+                >
+                  <ArrowPathIcon className="w-4 h-4" />
+                  重新评估
+                </button>
+                <button
+                  onClick={() => {
+                    setShowEvaluationModal(false);
+                    setSelectedEvaluationCompany(null);
+                    setEvaluationDetail(null);
+                  }}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <XMarkIcon className="w-6 h-6" />
+                </button>
+              </div>
+            </div>
+
+            {/* 总体完善度 */}
+            <div className="p-4 border-b bg-gray-50">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-gray-700">总体资料完善度</span>
+                <span className={`text-2xl font-bold ${getCompletenessColor(evaluationDetail.completeness_percentage)}`}>
+                  {evaluationDetail.completeness_percentage}%
+                </span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-3">
+                <div
+                  className={`h-3 rounded-full transition-all ${
+                    evaluationDetail.completeness_percentage >= 80
+                      ? 'bg-green-500'
+                      : evaluationDetail.completeness_percentage >= 50
+                      ? 'bg-yellow-500'
+                      : 'bg-red-500'
+                  }`}
+                  style={{ width: `${evaluationDetail.completeness_percentage}%` }}
+                />
+              </div>
+              <p className="text-xs text-gray-500 mt-2">
+                评估时间：{new Date(evaluationDetail.evaluation_time).toLocaleString('zh-CN')}
+              </p>
+            </div>
+
+            {/* 评估详情 */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              {evaluationDetail.categories.map((category, catIdx) => {
+                const completedCount = category.items.filter(i => i.status === 'completed').length;
+                const missingCount = category.items.filter(i => i.status === 'missing').length;
+                const incompleteCount = category.items.filter(i => i.status === 'incomplete').length;
+                const categoryProgress = category.total_count > 0
+                  ? Math.round((completedCount / category.total_count) * 100)
+                  : 0;
+
+                return (
+                  <div key={catIdx} className="border border-gray-200 rounded-lg overflow-hidden">
+                    {/* 类别标题 */}
+                    <div className="flex items-center justify-between px-4 py-3 bg-gray-50 border-b border-gray-200">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-gray-800">{category.name}</span>
+                        <span className="text-xs text-gray-500">
+                          ({completedCount}/{category.total_count})
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="w-24 bg-gray-200 rounded-full h-2">
+                          <div
+                            className={`h-2 rounded-full ${
+                              categoryProgress >= 80
+                                ? 'bg-green-500'
+                                : categoryProgress >= 50
+                                ? 'bg-yellow-500'
+                                : 'bg-red-500'
+                            }`}
+                            style={{ width: `${categoryProgress}%` }}
+                          />
+                        </div>
+                        <span className={`text-sm font-semibold ${
+                          categoryProgress >= 80 ? 'text-green-600' :
+                          categoryProgress >= 50 ? 'text-yellow-600' : 'text-red-600'
+                        }`}>
+                          {categoryProgress}%
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* 评估项列表 */}
+                    <div className="divide-y divide-gray-100">
+                      {category.items.map((item, itemIdx) => (
+                        <div key={itemIdx} className="px-4 py-3 flex items-start gap-3">
+                          <div className="mt-0.5 flex-shrink-0">
+                            {item.status === 'completed' && (
+                              <ShieldCheckIcon className="w-5 h-5 text-green-500" />
+                            )}
+                            {item.status === 'missing' && (
+                              <ExclamationTriangleIcon className="w-5 h-5 text-red-500" />
+                            )}
+                            {item.status === 'incomplete' && (
+                              <InformationCircleIcon className="w-5 h-5 text-yellow-500" />
+                            )}
+                            {item.status === 'unable_to_determine' && (
+                              <InformationCircleIcon className="w-5 h-5 text-gray-400" />
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium text-gray-800">{item.name}</span>
+                              <span className={`px-2 py-0.5 text-xs rounded ${evaluationStatusColors[item.status]}`}>
+                                {evaluationStatusLabels[item.status]}
+                              </span>
+                            </div>
+                            {item.detail && (
+                              <p className="text-sm text-gray-500 mt-1">{item.detail}</p>
+                            )}
+                            {item.document_ids && item.document_ids.length > 0 && (
+                              <p className="text-xs text-blue-600 mt-1">
+                                关联文档：{item.document_ids.length} 份
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* 类别汇总 */}
+                    {(missingCount > 0 || incompleteCount > 0) && (
+                      <div className="px-4 py-2 bg-gray-50 border-t border-gray-200 text-xs text-gray-500">
+                        {missingCount > 0 && (
+                          <span className="text-red-600 mr-3">缺失 {missingCount} 项</span>
+                        )}
+                        {incompleteCount > 0 && (
+                          <span className="text-yellow-600">不完整 {incompleteCount} 项</span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>

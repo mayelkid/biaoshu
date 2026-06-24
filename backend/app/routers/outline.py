@@ -25,7 +25,11 @@ router = APIRouter(prefix="/api/outline", tags=["目录管理"])
 async def generate_outline(request: OutlineRequest):
     """生成完整目录结构。"""
     try:
-        outline_service = OutlineService()
+        outline_service = OutlineService(
+            min_pages=request.min_pages or 20,
+            max_pages=request.max_pages or 100,
+            table_preference=request.table_preference or "medium",
+        )
         return await outline_service.generate_outline(
             overview=request.overview,
             requirements=request.requirements,
@@ -44,7 +48,11 @@ async def generate_outline(request: OutlineRequest):
 async def generate_outline_stream(request: OutlineRequest):
     """流式生成目录结构。"""
     try:
-        outline_service = OutlineService()
+        outline_service = OutlineService(
+            min_pages=request.min_pages or 20,
+            max_pages=request.max_pages or 100,
+            table_preference=request.table_preference or "medium",
+        )
     except AppError as exc:
         raise HTTPException(status_code=exc.status_code, detail=exc.message) from exc
 

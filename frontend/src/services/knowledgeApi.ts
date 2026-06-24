@@ -133,6 +133,52 @@ export interface FolderListResponse {
   folders: Folder[];
 }
 
+// ========== 企业评估类型 ==========
+
+export type EvaluationStatus = 'completed' | 'missing' | 'incomplete' | 'unable_to_determine';
+
+export interface EvaluationItem {
+  name: string;
+  status: EvaluationStatus;
+  detail?: string;
+  document_ids: string[];
+}
+
+export interface EvaluationCategory {
+  name: string;
+  items: EvaluationItem[];
+  completed_count: number;
+  total_count: number;
+}
+
+export interface CompanyEvaluationResult {
+  company_id: string;
+  user_id: string;
+  completeness_percentage: number;
+  evaluation_time: string;
+  categories: EvaluationCategory[];
+}
+
+export interface CompanyEvaluationResponse {
+  success: boolean;
+  message?: string;
+  result?: CompanyEvaluationResult;
+}
+
+export const evaluationStatusLabels: Record<EvaluationStatus, string> = {
+  completed: '已完善',
+  missing: '缺失',
+  incomplete: '不完整',
+  unable_to_determine: '无法判断',
+};
+
+export const evaluationStatusColors: Record<EvaluationStatus, string> = {
+  completed: 'bg-green-100 text-green-700',
+  missing: 'bg-red-100 text-red-700',
+  incomplete: 'bg-yellow-100 text-yellow-700',
+  unable_to_determine: 'bg-gray-100 text-gray-600',
+};
+
 export const categoryLabels: Record<DocumentCategory, string> = {
   company_info: '企业信息',
   qualification: '资质资料',
@@ -405,6 +451,38 @@ export const knowledgeApi = {
       return response.data.summaries || [];
     } catch (error) {
       return [];
+    }
+  },
+
+  // ========== 企业评估 ==========
+
+  // 获取企业评估结果
+  async getCompanyEvaluation(companyId: string): Promise<CompanyEvaluationResponse> {
+    try {
+      const response = await axios.get(`/api/knowledge/companies/${companyId}/evaluation`);
+      return response.data;
+    } catch (error) {
+      throw new Error(getErrorMessage(error, '获取评估结果失败'));
+    }
+  },
+
+  // 发起企业评估
+  async evaluateCompany(companyId: string): Promise<CompanyEvaluationResponse> {
+    try {
+      const response = await axios.post(`/api/knowledge/companies/${companyId}/evaluate`);
+      return response.data;
+    } catch (error) {
+      throw new Error(getErrorMessage(error, '发起评估失败'));
+    }
+  },
+
+  // 删除企业评估结果
+  async deleteCompanyEvaluation(companyId: string): Promise<DeleteResponse> {
+    try {
+      const response = await axios.delete(`/api/knowledge/companies/${companyId}/evaluation`);
+      return response.data;
+    } catch (error) {
+      throw new Error(getErrorMessage(error, '删除评估结果失败'));
     }
   },
 };

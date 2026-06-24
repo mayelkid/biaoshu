@@ -21,7 +21,14 @@ class ConfigManager:
 
     def load_config(self) -> Dict:
         """从本地JSON文件加载配置"""
-        default_config = {"api_key": "", "base_url": "", "model_name": "gpt-3.5-turbo"}
+        default_config = {
+            "api_key": "",
+            "base_url": "",
+            "model_name": "gpt-3.5-turbo",
+            "min_pages": 20,
+            "max_pages": 100,
+            "table_preference": "medium",
+        }
 
         if os.path.exists(self.config_file):
             try:
@@ -33,9 +40,24 @@ class ConfigManager:
 
         return default_config
 
-    def save_config(self, api_key: str, base_url: str, model_name: str) -> bool:
+    def save_config(
+        self,
+        api_key: str,
+        base_url: str,
+        model_name: str,
+        min_pages: int = 20,
+        max_pages: int = 100,
+        table_preference: str = "medium",
+    ) -> bool:
         """保存配置到本地JSON文件"""
-        config = {"api_key": api_key, "base_url": base_url, "model_name": model_name}
+        config = {
+            "api_key": api_key,
+            "base_url": base_url,
+            "model_name": model_name,
+            "min_pages": min_pages,
+            "max_pages": max_pages,
+            "table_preference": table_preference,
+        }
 
         try:
             with open(self.config_file, "w", encoding="utf-8") as f:

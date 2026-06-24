@@ -9,8 +9,11 @@ from ..utils.prompts.content_prompts import build_chapter_content_messages
 class ContentService:
     """负责目录叶子章节的正文生成。"""
 
-    def __init__(self, ai: OpenAIUtil | None = None):
+    def __init__(self, ai: OpenAIUtil | None = None, min_pages: int = 20, max_pages: int = 100, table_preference: str = "medium"):
         self.ai = ai or OpenAIUtil()
+        self.min_pages = min_pages
+        self.max_pages = max_pages
+        self.table_preference = table_preference
 
     async def stream_chapter_content(
         self,
@@ -25,6 +28,9 @@ class ContentService:
             parent_chapters=parent_chapters,
             sibling_chapters=sibling_chapters,
             project_overview=project_overview,
+            min_pages=self.min_pages,
+            max_pages=self.max_pages,
+            table_preference=self.table_preference,
         )
         async for chunk in self.ai.stream_chat_completion(messages, temperature=0.7):
             yield chunk
@@ -43,6 +49,9 @@ class ContentService:
                 parent_chapters=parent_chapters,
                 sibling_chapters=sibling_chapters,
                 project_overview=project_overview,
+                min_pages=self.min_pages,
+                max_pages=self.max_pages,
+                table_preference=self.table_preference,
             ),
             temperature=0.7,
         )

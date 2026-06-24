@@ -52,6 +52,7 @@ const TaskList: React.FC = () => {
     setEditingTask(task);
     setNewTaskName(task.name);
     setNewTaskDescription(task.description || '');
+    setSelectedCompanyId(task.companyId || '');
     setShowModal('edit');
   };
 
@@ -59,11 +60,13 @@ const TaskList: React.FC = () => {
     if (!editingTask || !newTaskName.trim()) return;
     await updateTask(editingTask.id, { 
       name: newTaskName.trim(), 
-      description: newTaskDescription.trim() 
+      description: newTaskDescription.trim(),
+      companyId: selectedCompanyId || undefined,
     });
     setEditingTask(null);
     setNewTaskName('');
     setNewTaskDescription('');
+    setSelectedCompanyId('');
     setShowModal(null);
   };
 
@@ -164,6 +167,14 @@ const TaskList: React.FC = () => {
                           {task.description && (
                             <p className="text-sm text-gray-500 mt-1">{task.description}</p>
                           )}
+                          {task.companyId && (
+                            <div className="flex items-center gap-1 mt-1">
+                              <BuildingOfficeIcon className="w-3.5 h-3.5 text-gray-400" />
+                              <span className="text-xs text-gray-500">
+                                {companies.find(c => c.id === task.companyId)?.name || '未知企业'}
+                              </span>
+                            </div>
+                          )}
                         </div>
                       </div>
                       <div className="flex items-center gap-4 mt-3">
@@ -236,7 +247,7 @@ const TaskList: React.FC = () => {
                   placeholder="请输入标书描述"
                 />
               </div>
-              {showModal === 'create' && (
+              {(showModal === 'create' || showModal === 'edit') && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">关联企业（可选）</label>
                   <select
@@ -262,6 +273,7 @@ const TaskList: React.FC = () => {
                   setEditingTask(null);
                   setNewTaskName('');
                   setNewTaskDescription('');
+                  setSelectedCompanyId('');
                 }}
                 className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
               >

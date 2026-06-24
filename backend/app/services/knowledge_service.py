@@ -19,6 +19,9 @@ from app.models.knowledge_schema import (
     UpdateFolderRequest,
 )
 
+from app.services.file_service import FileService
+from app.services.document_parser_service import document_parser_service
+
 
 class KnowledgeService:
     """知识库服务类"""
@@ -45,31 +48,57 @@ class KnowledgeService:
         """加载用户企业列表"""
         file_path = self._get_companies_file(user_id)
         if os.path.exists(file_path):
-            with open(file_path, "r", encoding="utf-8") as f:
-                data = json.load(f)
-                return [Company(**comp) for comp in data]
+            try:
+                with open(file_path, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    return [Company(**comp) for comp in data]
+            except (IOError, json.JSONDecodeError) as e:
+                print(f"Error loading companies for user {user_id}: {e}")
         return []
 
     def _save_companies(self, user_id: str, companies: List[Company]) -> None:
         """保存用户企业列表"""
         file_path = self._get_companies_file(user_id)
-        with open(file_path, "w", encoding="utf-8") as f:
-            json.dump([comp.model_dump() for comp in companies], f, ensure_ascii=False, indent=2)
+        try:
+            with open(file_path, "w", encoding="utf-8") as f:
+                json.dump([comp.model_dump() for comp in companies], f, ensure_ascii=False, indent=2)
+        except IOError as e:
+            print(f"Error saving companies for user {user_id}: {e}")
 
     def _load_documents(self, user_id: str) -> List[KnowledgeDocument]:
         """加载用户文档列表"""
         file_path = self._get_documents_file(user_id)
+        documents = []
         if os.path.exists(file_path):
-            with open(file_path, "r", encoding="utf-8") as f:
-                data = json.load(f)
-                return [KnowledgeDocument(**doc) for doc in data]
-        return []
+            try:
+                with open(file_path, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    documents = [KnowledgeDocument(**doc_data) for doc_data in data]
+            except (IOError, json.JSONDecodeError) as e:
+                print(f"Error loading documents for user {user_id}: {e}")
+        
+        # 为每个文档加载摘要
+        for doc in documents:
+            if doc.company_id and doc.id:
+                summary_data = document_parser_service.get_summary(user_id, doc.company_id, doc.id)
+                if summary_data:
+                    doc.summary = summary_data.get("summary", "")
+                    doc.key_points = summary_data.get("key_points", [])
+                    doc.category_hint = summary_data.get("category_hint")
+                    doc.keywords = summary_data.get("keywords", [])
+                    doc.content_preview = summary_data.get("content_preview")
+                    doc.status = summary_data.get("status", "completed") # 假设如果有摘要，状态就是已完成
+                    doc.processed_at = summary_data.get("processed_at") # 从摘要中获取处理时间
+        return documents
 
     def _save_documents(self, user_id: str, documents: List[KnowledgeDocument]) -> None:
         """保存用户文档列表"""
         file_path = self._get_documents_file(user_id)
-        with open(file_path, "w", encoding="utf-8") as f:
-            json.dump([doc.model_dump() for doc in documents], f, ensure_ascii=False, indent=2)
+        try:
+            with open(file_path, "w", encoding="utf-8") as f:
+                json.dump([doc.model_dump() for doc in documents], f, ensure_ascii=False, indent=2)
+        except IOError as e:
+            print(f"Error saving documents for user {user_id}: {e}")
 
     # ========== 企业管理 ==========
 
@@ -229,7 +258,7 @@ class KnowledgeService:
             self._save_documents(user_id, documents)
             # 删除关联的文件
             if deleted_doc and deleted_doc.file_path and os.path.exists(deleted_doc.file_path):
-                os.remove(deleted_doc.file_path)
+                FileService._safe_file_cleanup(deleted_doc.file_path)
             # 更新企业文档计数
             if deleted_doc and deleted_doc.company_id:
                 self._update_company_document_count(user_id, deleted_doc.company_id)
@@ -277,16 +306,22 @@ class KnowledgeService:
         """加载用户文件夹列表"""
         file_path = self._get_folders_file(user_id)
         if os.path.exists(file_path):
-            with open(file_path, "r", encoding="utf-8") as f:
-                data = json.load(f)
-                return [Folder(**folder) for folder in data]
+            try:
+                with open(file_path, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    return [Folder(**folder) for folder in data]
+            except (IOError, json.JSONDecodeError) as e:
+                print(f"Error loading folders for user {user_id}: {e}")
         return []
 
     def _save_folders(self, user_id: str, folders: List[Folder]) -> None:
         """保存用户文件夹列表"""
         file_path = self._get_folders_file(user_id)
-        with open(file_path, "w", encoding="utf-8") as f:
-            json.dump([folder.model_dump() for folder in folders], f, ensure_ascii=False, indent=2)
+        try:
+            with open(file_path, "w", encoding="utf-8") as f:
+                json.dump([folder.model_dump() for folder in folders], f, ensure_ascii=False, indent=2)
+        except IOError as e:
+            print(f"Error saving folders for user {user_id}: {e}")
 
     def get_folders_by_company(self, user_id: str, company_id: str) -> List[Folder]:
         """获取指定企业的文件夹"""

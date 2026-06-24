@@ -14,6 +14,10 @@ class ConfigRequest(BaseModel):
     api_key: str = Field(..., description="OpenAI API密钥")
     base_url: Optional[str] = Field(None, description="Base URL")
     model_name: str = Field("gpt-3.5-turbo", description="模型名称")
+    # 标书生成偏好
+    min_pages: Optional[int] = Field(20, description="生成标书最小页数", ge=5, le=500)
+    max_pages: Optional[int] = Field(100, description="生成标书最大页数", ge=5, le=500)
+    table_preference: Optional[str] = Field("medium", description="表格数量偏好：none(无表格)、medium(适量表格)、heavy(大量表格)")
 
 
 class ConfigResponse(BaseModel):
@@ -124,6 +128,9 @@ class OutlineRequest(BaseModel):
     old_document: Optional[str] = Field(
         None, description="上传的方案扩写文件解析出的旧文档"
     )
+    min_pages: Optional[int] = Field(20, description="生成标书最小页数", ge=5, le=500)
+    max_pages: Optional[int] = Field(100, description="生成标书最大页数", ge=5, le=500)
+    table_preference: Optional[str] = Field("medium", description="表格数量偏好：none(无表格)、medium(适量表格)、heavy(大量表格)")
 
 
 class ContentGenerationRequest(BaseModel):
@@ -144,6 +151,9 @@ class ChapterContentRequest(BaseModel):
         None, description="同级章节列表"
     )
     project_overview: str = Field("", description="项目概述")
+    min_pages: Optional[int] = Field(20, description="生成标书最小页数", ge=5, le=500)
+    max_pages: Optional[int] = Field(100, description="生成标书最大页数", ge=5, le=500)
+    table_preference: Optional[str] = Field("medium", description="表格数量偏好：none(无表格)、medium(适量表格)、heavy(大量表格)")
 
 
 class ErrorResponse(BaseModel):

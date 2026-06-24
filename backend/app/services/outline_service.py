@@ -30,8 +30,11 @@ from ..utils.prompts.outline_prompts import (
 class OutlineService:
     """负责目录生成、审核与技术评分项对齐。"""
 
-    def __init__(self, ai: OpenAIUtil | None = None):
+    def __init__(self, ai: OpenAIUtil | None = None, min_pages: int = 20, max_pages: int = 100, table_preference: str = "medium"):
         self.ai = ai or OpenAIUtil()
+        self.min_pages = min_pages
+        self.max_pages = max_pages
+        self.table_preference = table_preference
 
     async def generate_outline(
         self,
@@ -394,6 +397,9 @@ class OutlineService:
                 requirement_group=requirement_group,
                 old_outline=old_outline,
                 suggestions=suggestions,
+                min_pages=self.min_pages,
+                max_pages=self.max_pages,
+                table_preference=self.table_preference,
             )
         else:
             messages = generate_aligned_children_outline_prompt(
@@ -402,6 +408,9 @@ class OutlineService:
                 parent_item=parent_item,
                 requirement_group=requirement_group,
                 suggestions=suggestions,
+                min_pages=self.min_pages,
+                max_pages=self.max_pages,
+                table_preference=self.table_preference,
             )
 
         return await self.ai.collect_json_response(
@@ -516,12 +525,18 @@ class OutlineService:
                 requirements,
                 old_outline,
                 suggestions=suggestions,
+                min_pages=self.min_pages,
+                max_pages=self.max_pages,
+                table_preference=self.table_preference,
             )
         else:
             messages = generate_outline_prompt(
                 overview,
                 requirements,
                 suggestions=suggestions,
+                min_pages=self.min_pages,
+                max_pages=self.max_pages,
+                table_preference=self.table_preference,
             )
 
         return await self.ai.collect_json_response(
@@ -604,12 +619,18 @@ class OutlineService:
                 requirements=requirements,
                 old_outline=old_outline,
                 suggestions=suggestions,
+                min_pages=self.min_pages,
+                max_pages=self.max_pages,
+                table_preference=self.table_preference,
             )
         else:
             messages = generate_top_level_outline_prompt(
                 overview=overview,
                 requirements=requirements,
                 suggestions=suggestions,
+                min_pages=self.min_pages,
+                max_pages=self.max_pages,
+                table_preference=self.table_preference,
             )
 
         return await self.ai.collect_json_response(
@@ -640,6 +661,9 @@ class OutlineService:
                 parent_item=parent_item,
                 old_outline=old_outline,
                 suggestions=suggestions,
+                min_pages=self.min_pages,
+                max_pages=self.max_pages,
+                table_preference=self.table_preference,
             )
         else:
             messages = generate_children_outline_prompt(
@@ -647,6 +671,9 @@ class OutlineService:
                 requirements=requirements,
                 parent_item=parent_item,
                 suggestions=suggestions,
+                min_pages=self.min_pages,
+                max_pages=self.max_pages,
+                table_preference=self.table_preference,
             )
 
         return await self.ai.collect_json_response(

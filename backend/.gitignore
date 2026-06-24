@@ -27,4 +27,5 @@ yarn-error.log*
 /app/data
 /static
 /uploads
+/logs
 __pycache__/

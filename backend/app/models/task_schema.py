@@ -57,6 +57,10 @@ class ProposalTask(BaseModel):
     updated_at: str = Field(..., alias="updatedAt", description="更新时间")
     user_id: str = Field(..., alias="userId", description="用户ID")
     company_id: Optional[str] = Field(None, alias="companyId", description="关联的企业ID")
+    # 生成偏好
+    min_pages: int = Field(20, alias="minPages", ge=5, le=500, description="生成标书最小页数")
+    max_pages: int = Field(100, alias="maxPages", ge=5, le=500, description="生成标书最大页数")
+    table_preference: str = Field("medium", alias="tablePreference", description="表格偏好: none/medium/heavy")
 
 
 class CreateTaskRequest(BaseModel):
@@ -81,6 +85,9 @@ class UpdateTaskRequest(BaseModel):
     current_step: Optional[int] = Field(None, alias="currentStep")
     status: Optional[TaskStatus] = None
     progress: Optional[int] = None
+    min_pages: Optional[int] = Field(None, alias="minPages")
+    max_pages: Optional[int] = Field(None, alias="maxPages")
+    table_preference: Optional[str] = Field(None, alias="tablePreference")
 
 
 class TaskListResponse(BaseModel):

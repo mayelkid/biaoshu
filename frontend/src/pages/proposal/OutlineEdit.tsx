@@ -13,6 +13,9 @@ interface OutlineEditProps {
   techRequirements: string;
   outlineData: OutlineData | null;
   onOutlineGenerated: (outline: OutlineData) => void;
+  minPages?: number;
+  maxPages?: number;
+  tablePreference?: string;
 }
 
 const OutlineEdit: React.FC<OutlineEditProps> = ({
@@ -20,6 +23,9 @@ const OutlineEdit: React.FC<OutlineEditProps> = ({
   techRequirements,
   outlineData,
   onOutlineGenerated,
+  minPages = 20,
+  maxPages = 100,
+  tablePreference = 'medium',
 }) => {
   const [generating, setGenerating] = useState(false);
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
@@ -77,6 +83,9 @@ const OutlineEdit: React.FC<OutlineEditProps> = ({
         uploaded_expand: uploadedExpand,
         old_outline: oldOutline || undefined,
         old_document: oldDocument || undefined,
+        min_pages: minPages,
+        max_pages: maxPages,
+        table_preference: tablePreference,
       });
 
       let outlineResult: OutlineData | null = null;

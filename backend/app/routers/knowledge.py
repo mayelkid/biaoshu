@@ -2,11 +2,13 @@
 
 import json
 import os
+from datetime import datetime
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Query, Cookie, Form
 from fastapi.responses import FileResponse
 
+from app.services.evaluation_service import get_evaluation_service, EvaluationService
 from app.models.knowledge_schema import (
     KnowledgeDocument,
     CreateDocumentRequest,
@@ -25,6 +27,8 @@ from app.models.knowledge_schema import (
     CreateFolderRequest,
     UpdateFolderRequest,
     FolderListResponse,
+    CompanyEvaluationResponse,
+    CompanyEvaluationResult,
 )
 from app.services.knowledge_service import get_knowledge_service, KnowledgeService
 from app.services.auth_service import get_auth_service, AuthService
@@ -329,28 +333,62 @@ async def parse_document(
 ):
     """解析文档内容，提取摘要和关键信息"""
     # 获取文档信息
-    documents = knowledge_service.search_documents(user_id, "", "", None)
-    doc = None
-    for d in documents:
-        if d.id == document_id:
-            doc = d
-            break
+    doc = knowledge_service.get_document_by_id(user_id, document_id)
     
     if not doc:
         raise HTTPException(status_code=404, detail="文档不存在")
-    
+
+    # 提取文件的实际扩展名
+    actual_file_extension = ""
+    if doc.file_name:
+        _, ext = os.path.splitext(doc.file_name)
+        if ext:
+            actual_file_extension = ext.lower().lstrip('.') # 例如 "pdf", "docx", "png"
+
+    # 构建文件的绝对路径
+    # doc.file_path is like "uploads/8c6976e5b5410415/knowledge/..."
+    # settings.upload_dir is now an absolute path like "d:/WSL/Share/biaoshu/uploads"
+
+    # 移除 doc.file_path 中重复的 "uploads/" 前缀
+    # 这里我们只移除一次，以防万一路径中有多个 "uploads/"
+    # 确保路径分隔符的兼容性
+    path_without_redundant_uploads = doc.file_path
+    if path_without_redundant_uploads.startswith("uploads/") or \
+       path_without_redundant_uploads.startswith("uploads\\"): # 兼容Windows路径分隔符
+        # 移除第一个 "uploads/" 或 "uploads\\"
+        path_without_redundant_uploads = path_without_redundant_uploads[len("uploads" + os.sep):]
+
+    absolute_file_path = os.path.join(settings.upload_dir, path_without_redundant_uploads) # 修改此处
+
     # 解析文档
-    summary = await parser_service.parse_document(
+    summary_data = await parser_service.parse_document(
         doc.id,
         doc.company_id,
-        doc.file_path,
-        doc.file_type,
-        doc.title
+        absolute_file_path, # 修改此处，传递绝对路径
+        actual_file_extension, # 现在传递的是实际的文件扩展名
+        doc.title,
+        user_id
     )
-    if not summary:
-        raise HTTPException(status_code=500, detail="文档解析失败")
-    
-    return summary
+
+    if summary_data["status"] == "failed":
+        raise HTTPException(
+            status_code=500, detail=summary_data.get("error_message", "文档解析失败")
+        )
+
+    # 成功解析，构建 DocumentSummaryResponse 对象
+    return DocumentSummaryResponse(
+        id=document_id,
+        document_id=document_id,
+        company_id=doc.company_id,
+        summary=summary_data.get("summary", ""),
+        key_points=summary_data.get("key_points", []),
+        category_hint=summary_data.get("category_hint"),
+        keywords=summary_data.get("keywords", []),
+        content_preview=summary_data.get("content_preview"),
+        status=summary_data.get("status", "completed"),
+        processed_at=datetime.now(),  # 使用当前时间作为处理时间
+        error_message=None,
+    )
 
 
 @router.get("/documents/{document_id}/summary", response_model=DocumentSummaryResponse)
@@ -365,3 +403,67 @@ async def get_document_summary(
         raise HTTPException(status_code=404, detail="文档摘要不存在")
     
     return summary
+
+
+# ========== 企业资料完善度评估 ==========
+
+@router.get("/companies/{company_id}/evaluation", response_model=CompanyEvaluationResponse)
+async def get_company_evaluation(
+    company_id: str,
+    user_id: str = Depends(get_current_user_id),
+    evaluation_service: EvaluationService = Depends(get_evaluation_service),
+):
+    """获取企业资料完善度评估结果"""
+    result = evaluation_service.load_evaluation(user_id, company_id)
+    if not result:
+        return CompanyEvaluationResponse(
+            success=False,
+            message="暂无评估结果，请先发起评估",
+            result=None,
+        )
+    return CompanyEvaluationResponse(
+        success=True,
+        message="评估结果获取成功",
+        result=result,
+    )
+
+
+@router.post("/companies/{company_id}/evaluate", response_model=CompanyEvaluationResponse)
+async def evaluate_company(
+    company_id: str,
+    user_id: str = Depends(get_current_user_id),
+    knowledge_service: KnowledgeService = Depends(get_knowledge_service),
+    evaluation_service: EvaluationService = Depends(get_evaluation_service),
+):
+    """发起企业资料完善度评估"""
+    # 检查企业是否存在
+    company = knowledge_service.get_company_by_id(user_id, company_id)
+    if not company:
+        raise HTTPException(status_code=404, detail="企业不存在")
+
+    try:
+        result = await evaluation_service.evaluate_company(user_id, company_id)
+        return CompanyEvaluationResponse(
+            success=True,
+            message="评估完成",
+            result=result,
+        )
+    except Exception as exc:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.exception("企业评估失败")
+        raise HTTPException(status_code=500, detail=f"评估失败: {exc}") from exc
+
+
+@router.delete("/companies/{company_id}/evaluation", response_model=DeleteResponse)
+async def delete_company_evaluation(
+    company_id: str,
+    user_id: str = Depends(get_current_user_id),
+    evaluation_service: EvaluationService = Depends(get_evaluation_service),
+):
+    """删除企业评估结果"""
+    eval_file = evaluation_service._get_evaluation_file(user_id, company_id)
+    if os.path.exists(eval_file):
+        os.remove(eval_file)
+        return DeleteResponse(success=True, message="评估结果已清除")
+    return DeleteResponse(success=False, message="评估结果不存在")

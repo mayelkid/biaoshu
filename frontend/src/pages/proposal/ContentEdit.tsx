@@ -11,6 +11,10 @@ import { draftStorage } from '../../utils/draftStorage';
 
 interface ContentEditProps {
   outlineData: OutlineData | null;
+  onContentUpdated?: (outlineData: OutlineData) => void;
+  minPages?: number;
+  maxPages?: number;
+  tablePreference?: string;
 }
 
 interface GenerationProgress {
@@ -24,6 +28,10 @@ interface GenerationProgress {
 
 const ContentEdit: React.FC<ContentEditProps> = ({
   outlineData,
+  onContentUpdated,
+  minPages = 20,
+  maxPages = 100,
+  tablePreference = 'medium',
 }) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -204,7 +212,10 @@ const ContentEdit: React.FC<ContentEditProps> = ({
         chapter: item,
         parent_chapters: parentChapters,
         sibling_chapters: siblingChapters,
-        project_overview: projectOverview
+        project_overview: projectOverview,
+        min_pages: minPages,
+        max_pages: maxPages,
+        table_preference: tablePreference,
       };
 
       const response = await contentApi.generateChapterContentStream(request);
@@ -293,8 +304,22 @@ const ContentEdit: React.FC<ContentEditProps> = ({
       // 更新状态
       setLeafItems(updatedItems);
       
-      // 这里需要更新整个outlineData，但由于我们只有props，需要通过回调通知父组件
-      // 暂时只更新本地状态
+      // 将生成内容合并到 outlineData 并通知父组件保存
+      if (onContentUpdated && outlineData) {
+        const buildUpdatedOutline = (items: OutlineItem[]): OutlineItem[] => {
+          return items.map(item => {
+            if (!item.children || item.children.length === 0) {
+              const leafItem = updatedItems.find(l => l.id === item.id);
+              return { ...item, content: leafItem?.content || item.content };
+            }
+            return { ...item, children: buildUpdatedOutline(item.children) };
+          });
+        };
+        onContentUpdated({
+          ...outlineData,
+          outline: buildUpdatedOutline(outlineData.outline),
+        });
+      }
       
     } catch (error) {
       setMessage({ type: 'error', text: getErrorMessage(error, '生成内容失败') });
@@ -451,14 +476,14 @@ const ContentEdit: React.FC<ContentEditProps> = ({
           <div className="prose max-w-none">
             {/* 文档标题 */}
             <h1 className="text-3xl font-bold text-gray-900 mb-6">
-              {outlineData.project_name || '投标技术文件'}
+              {outlineData.project_name || '投标文件'}
             </h1>
             
             {/* 项目概述 */}
             {outlineData.project_overview && (
               <div className="bg-blue-50 border-l-4 border-blue-400 p-6 mb-8 mt-0">
                 <h2 className="text-lg font-semibold text-blue-900 mb-2">项目概述</h2>
-                <p className="text-blue-800 overflow-auto max-h-400" style={{whiteSpace:'pre-wrap'}}>{outlineData.project_overview}</p>
+                <p className="text-blue-800 overflow-auto max-h-[400px]" style={{whiteSpace:'pre-wrap'}}>{outlineData.project_overview}</p>
               </div>
             )}
 

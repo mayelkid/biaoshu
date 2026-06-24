@@ -46,6 +46,9 @@ export interface OutlineRequest {
   uploaded_expand?: boolean;
   old_outline?: string;
   old_document?: string;
+  min_pages?: number;
+  max_pages?: number;
+  table_preference?: string;
 }
 
 // 章节内容生成请求
@@ -54,6 +57,9 @@ export interface ChapterContentRequest {
   parent_chapters?: OutlineItem[];
   sibling_chapters?: OutlineItem[];
   project_overview: string;
+  min_pages?: number;
+  max_pages?: number;
+  table_preference?: string;
 }
 
 // Word 导出请求

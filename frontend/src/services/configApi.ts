@@ -7,6 +7,10 @@ export interface ConfigData {
   api_key: string;
   base_url?: string;
   model_name: string;
+  // 标书生成偏好
+  min_pages?: number;
+  max_pages?: number;
+  table_preference?: 'none' | 'medium' | 'heavy';
 }
 
 export const configApi = {

@@ -1,8 +1,19 @@
 import os
 import re
+import json
 from typing import Optional, List, Dict, Any
 from app.models.document_summary import DocumentSummaryCreate, DocumentSummaryUpdate
 from app.utils.openai_util import OpenAIUtil
+from app.config import settings
+
+
+from enum import Enum
+
+class ParseStatus(str, Enum):
+    PENDING = "pending"
+    PROCESSING = "processing"
+    COMPLETED = "completed"
+    FAILED = "failed"
 
 
 class DocumentParserService:
@@ -11,19 +22,21 @@ class DocumentParserService:
     def __init__(self):
         self.max_preview_length = 2000
         self.max_images = 5
+        self.upload_dir = settings.upload_dir # 添加这一行
 
     async def parse_document(
         self,
         document_id: str,
         company_id: str,
         file_path: str,
-        file_type: str,
-        title: str
+        file_extension: str,
+        title: str,
+        user_id: str
     ) -> Dict[str, Any]:
         """解析文档并提取摘要信息"""
         try:
             # 1. 读取文件内容
-            content = await self._read_file_content(file_path, file_type)
+            content = await self._read_file_content(file_path, file_extension)
             if not content:
                 return {
                     "status": "failed",
@@ -31,13 +44,13 @@ class DocumentParserService:
                 }
 
             # 2. 提取图片并理解（支持 PDF 和 Word）
-            images_content = await self._extract_and_understand_images(file_path, file_type)
+            images_content = await self._extract_and_understand_images(file_path, file_extension)
 
             # 3. 提取内容摘要（包含文字和图片内容）
-            summary_result = await self._extract_summary(content, images_content, file_type, title)
-
+            summary_result = await self._extract_summary(content, images_content, file_extension, title)
+        
             # 4. 保存摘要到文件
-            await self._save_summary(document_id, company_id, summary_result)
+            await self._save_summary(user_id, company_id, document_id, summary_result)
 
             return {
                 "status": "completed",
@@ -54,45 +67,56 @@ class DocumentParserService:
                 "error_message": str(e)
             }
 
-    async def _read_file_content(self, file_path: str, file_type: str) -> Optional[str]:
-        """根据文件类型读取内容"""
-        try:
-            if not os.path.exists(file_path):
+    async def _read_file_content(self, file_path: str, file_extension: str) -> Optional[str]:
+        """根据文件扩展名读取内容"""
+        if not os.path.exists(file_path):
+            print(f"File not found: {file_path}")
+            return None
+
+        content = ""
+        file_extension = file_extension.lower()
+
+        if file_extension == "pdf":
+            content = self._read_pdf(file_path)
+        elif file_extension == "docx":
+            content = self._read_docx(file_path)
+        elif file_extension == "doc":
+            print(f"Warning: .doc file format is not supported for text extraction: {file_path}")
+            return "" # 不支持 .doc 文件格式
+        elif file_extension in ["txt"]:
+            content = self._read_txt(file_path)
+        elif file_extension in ["png", "jpg", "jpeg", "gif", "svg", "bmp", "webp"]:
+            # 图片文件不通过此方法读取文本内容
+            return ""
+        else:
+            # 对于其他未知扩展名，尝试作为文本读取，但需处理二进制文件情况
+            try:
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    content = f.read()
+            except UnicodeDecodeError:
+                print(f"Warning: File {file_path} is likely a binary file or has a non-UTF-8 encoding. Not attempting to read as text.")
+                return "" # 二进制文件无法解码为文本时返回空字符串
+            except Exception as e:
+                print(f"Error reading generic file {file_path} as text: {e}")
                 return None
 
-            content = ""
-            file_type = file_type.lower()
+        return content.strip()
 
-            if file_type == "pdf":
-                content = self._read_pdf(file_path)
-            elif file_type in ["docx", "doc"]:
-                content = self._read_docx(file_path)
-            elif file_type in ["txt", "text"]:
-                content = self._read_txt(file_path)
-            else:
-                try:
-                    with open(file_path, 'r', encoding='utf-8') as f:
-                        content = f.read()
-                except:
-                    return None
-
-            return content.strip()
-
-        except Exception as e:
-            print(f"Error reading file: {e}")
-            return None
 
     def _read_pdf(self, file_path: str) -> str:
         """读取 PDF 文件"""
         try:
             import PyPDF2
             content = []
+            
             with open(file_path, 'rb') as f:
                 reader = PyPDF2.PdfReader(f)
                 for page in reader.pages[:20]:
                     text = page.extract_text()
                     if text:
                         content.append(text)
+            if not content:
+                print(f"Warning: No extractable text found in PDF: {file_path}")
             return "\n".join(content)
         except Exception as e:
             print(f"PDF read error: {e}")
@@ -127,14 +151,18 @@ class DocumentParserService:
             print(f"TXT read error: {e}")
             return ""
 
-    async def _extract_and_understand_images(self, file_path: str, file_type: str) -> str:
+    async def _extract_and_understand_images(self, file_path: str, file_extension: str) -> str:
         """提取文档中的图片并使用 AI 理解图片内容"""
         try:
             from app.services.file_service import FileService
             file_service = FileService()
             
             # 提取图片
-            images = file_service.extract_images_from_file(file_path, file_type)
+            images = []
+            if file_extension == "pdf":
+                images = FileService.extract_images_from_pdf(file_path)
+            elif file_extension == "docx":
+                images = FileService.extract_images_from_docx(file_path)
             
             if not images:
                 return ""
@@ -228,13 +256,13 @@ class DocumentParserService:
         self,
         content: str,
         images_content: str,
-        file_type: str,
+        file_extension: str,
         title: str
     ) -> Dict[str, Any]:
         """调用 AI 提取摘要信息"""
         try:
             # 构建提示词
-            doc_type = 'PDF' if file_type == 'pdf' else 'Word' if file_type in ['docx', 'doc'] else '文档'
+            doc_type = 'PDF' if file_extension == 'pdf' else 'Word' if file_extension in ['docx', 'doc'] else '文档'
             
             # 组合文字和图片内容
             full_content = content
@@ -289,26 +317,27 @@ class DocumentParserService:
             "keywords": []
         }
 
-    def _save_summary(self, doc_id: str, summary_data: dict):
+    async def _save_summary(self, user_id: str, company_id: str, doc_id: str, summary_data: dict):
         """保存文档摘要"""
         try:
-            summary_dir = os.path.join(self.upload_dir, "summaries")
-            os.makedirs(summary_dir, exist_ok=True)
-            summary_file = os.path.join(summary_dir, f"{doc_id}.json")
+            # 构建摘要存储路径：uploads/{user_id}/knowledge/{company_id}/summaries/{doc_id}.json
+            summary_base_dir = os.path.join(self.upload_dir, user_id, "knowledge", company_id, "summaries")
+            os.makedirs(summary_base_dir, exist_ok=True)
+            summary_file = os.path.join(summary_base_dir, f"{doc_id}.json")
             with open(summary_file, 'w', encoding='utf-8') as f:
                 json.dump(summary_data, f, ensure_ascii=False, indent=2)
         except Exception as e:
             print(f"Error saving summary: {e}")
 
-    def _load_summaries(self, doc_ids: List[str]) -> dict:
+    def _load_summaries(self, user_id: str, company_id: str, doc_ids: List[str]) -> dict:
         """批量加载文档摘要"""
         summaries = {}
         try:
-            summary_dir = os.path.join(self.upload_dir, "summaries")
-            if not os.path.exists(summary_dir):
+            summary_base_dir = os.path.join(self.upload_dir, user_id, "knowledge", company_id, "summaries")
+            if not os.path.exists(summary_base_dir):
                 return summaries
             for doc_id in doc_ids:
-                summary_file = os.path.join(summary_dir, f"{doc_id}.json")
+                summary_file = os.path.join(summary_base_dir, f"{doc_id}.json")
                 if os.path.exists(summary_file):
                     with open(summary_file, 'r', encoding='utf-8') as f:
                         summaries[doc_id] = json.load(f)
@@ -316,11 +345,11 @@ class DocumentParserService:
             print(f"Error loading summaries: {e}")
         return summaries
 
-    def get_summary(self, doc_id: str) -> Optional[dict]:
+    def get_summary(self, user_id: str, company_id: str, doc_id: str) -> Optional[dict]:
         """获取文档摘要"""
         try:
-            summary_dir = os.path.join(self.upload_dir, "summaries")
-            summary_file = os.path.join(summary_dir, f"{doc_id}.json")
+            summary_base_dir = os.path.join(self.upload_dir, user_id, "knowledge", company_id, "summaries")
+            summary_file = os.path.join(summary_base_dir, f"{doc_id}.json")
             if os.path.exists(summary_file):
                 with open(summary_file, 'r', encoding='utf-8') as f:
                     return json.load(f)
@@ -328,9 +357,9 @@ class DocumentParserService:
             print(f"Error loading summary: {e}")
         return None
 
-    def get_summary_status(self, doc_id: str) -> dict:
+    def get_summary_status(self, user_id: str, company_id: str, doc_id: str) -> dict:
         """获取文档解析状态"""
-        summary = self.get_summary(doc_id)
+        summary = self.get_summary(user_id, company_id, doc_id)
         return {
             "document_id": doc_id,
             "status": ParseStatus.COMPLETED if summary else ParseStatus.PENDING,

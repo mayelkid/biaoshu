@@ -6,6 +6,51 @@ from typing import Optional, List
 from pydantic import BaseModel, Field
 
 
+class EvaluationStatus(str, Enum):
+    """评估项状态"""
+    COMPLETED = "completed"             # 已完善
+    MISSING = "missing"                 # 缺失
+    INCOMPLETE = "incomplete"           # 不完整
+    UNABLE_TO_DETERMINE = "unable_to_determine" # 无法判断
+
+
+class EvaluationItem(BaseModel):
+    """单个评估项"""
+    name: str = Field(..., description="评估项名称")
+    status: EvaluationStatus = Field(..., description="评估项状态")
+    detail: Optional[str] = Field(None, description="详细说明")
+    document_ids: List[str] = Field([], description="发现相关信息的文档ID列表")
+
+
+class EvaluationCategory(BaseModel):
+    """评估类别"""
+    name: str = Field(..., description="评估类别名称")
+    items: List[EvaluationItem] = Field([], description="评估项列表")
+    
+    # 增加一个属性来追踪该类别下已完善的项数
+    completed_count: int = Field(0, description="该类别下已完善的项数")
+    # 增加一个属性来追踪该类别下总的评估项数
+    total_count: int = Field(0, description="该类别下总的评估项数")
+
+
+class CompanyEvaluationResult(BaseModel):
+    """企业资料完善度评估结果"""
+    company_id: str = Field(..., description="企业ID")
+    user_id: str = Field(..., description="用户ID")
+    completeness_percentage: float = Field(0.0, description="资料完善度百分比 (0-100)")
+    evaluation_time: datetime = Field(..., description="评估时间")
+    categories: List[EvaluationCategory] = Field([], description="详细评估类别列表")
+    
+    model_config = {"validate_by_name": True}
+
+
+class CompanyEvaluationResponse(BaseModel):
+    """企业资料完善度评估响应"""
+    success: bool = Field(True, description="是否成功")
+    message: Optional[str] = Field(None, description="消息")
+    result: Optional[CompanyEvaluationResult] = Field(None, description="评估结果")
+
+
 class DocumentType(str, Enum):
     """文档类型"""
     TEXT = "text"      # 文本文档
@@ -75,6 +120,15 @@ class KnowledgeDocument(BaseModel):
     folder_id: Optional[str] = Field(None, description="文件夹ID")
     created_at: str = Field(..., description="创建时间")
     updated_at: str = Field(..., description="更新时间")
+
+    # AI 解析相关字段
+    summary: Optional[str] = Field(None, description="AI 提取的摘要")
+    key_points: Optional[List[str]] = Field(None, description="AI 提取的关键要点")
+    category_hint: Optional[str] = Field(None, description="AI 建议的分类标签")
+    keywords: Optional[List[str]] = Field(None, description="AI 提取的关键词")
+    content_preview: Optional[str] = Field(None, description="文档内容预览")
+    status: Optional[str] = Field(None, description="文档解析状态") # 例如：pending, completed, failed
+    processed_at: Optional[str] = Field(None, description="文档处理时间")
 
     model_config = {"validate_by_name": True}
 

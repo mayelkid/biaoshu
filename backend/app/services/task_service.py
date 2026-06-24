@@ -127,6 +127,14 @@ def update_task(user_id: str, task_id: str, updates: UpdateTaskRequest) -> Optio
             task.name = value
         elif key == "description":
             task.description = value
+        elif key == "minPages":
+            task.min_pages = value
+        elif key == "maxPages":
+            task.max_pages = value
+        elif key == "tablePreference":
+            task.table_preference = value
+        elif key == "companyId":
+            task.company_id = value
         else:
             # 尝试直接设置属性
             setattr(task, key, value)

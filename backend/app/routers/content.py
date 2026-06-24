@@ -18,7 +18,11 @@ router = APIRouter(prefix="/api/content", tags=["内容管理"])
 async def generate_chapter_content(request: ChapterContentRequest):
     """为单个章节生成完整内容。"""
     try:
-        content_service = ContentService()
+        content_service = ContentService(
+            min_pages=request.min_pages or 20,
+            max_pages=request.max_pages or 100,
+            table_preference=request.table_preference or "medium",
+        )
         content = await content_service.generate_chapter_content(
             chapter=request.chapter,
             parent_chapters=request.parent_chapters,
@@ -37,7 +41,11 @@ async def generate_chapter_content(request: ChapterContentRequest):
 async def generate_chapter_content_stream(request: ChapterContentRequest):
     """流式生成单章节内容。"""
     try:
-        content_service = ContentService()
+        content_service = ContentService(
+            min_pages=request.min_pages or 20,
+            max_pages=request.max_pages or 100,
+            table_preference=request.table_preference or "medium",
+        )
     except AppError as exc:
         raise HTTPException(status_code=exc.status_code, detail=exc.message) from exc
 

@@ -21,6 +21,9 @@ async def save_config(config: ConfigRequest):
             api_key=config.api_key,
             base_url=config.base_url or "",
             model_name=config.model_name,
+            min_pages=config.min_pages or 20,
+            max_pages=config.max_pages or 100,
+            table_preference=config.table_preference or "medium",
         )
 
         if success:

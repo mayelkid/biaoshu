@@ -4,7 +4,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { collectSseText, documentApi, getErrorMessage } from '../../services';
-import { CloudArrowUpIcon, DocumentIcon } from '@heroicons/react/24/outline';
+import { CloudArrowUpIcon, DocumentIcon, Cog6ToothIcon } from '@heroicons/react/24/outline';
 import { draftStorage } from '../../utils/draftStorage';
 
 const STREAM_UPDATE_DELAY = 80;
@@ -13,16 +13,25 @@ interface DocumentAnalysisProps {
   fileContent: string;
   projectOverview: string;
   techRequirements: string;
+  minPages: number;
+  maxPages: number;
+  tablePreference: 'none' | 'medium' | 'heavy';
   onFileUpload: (content: string) => void;
-  onAnalysisComplete: (overview: string, requirements: string) => void;
+  onAnalysisComplete: (fileContent: string, overview: string, requirements: string) => void;
+  onDataChange?: (overview: string, requirements: string) => void;
+  onPreferenceChange?: (updates: { minPages?: number; maxPages?: number; tablePreference?: 'none' | 'medium' | 'heavy' }) => void;
 }
 
 const DocumentAnalysis: React.FC<DocumentAnalysisProps> = ({
   fileContent,
   projectOverview,
   techRequirements,
+  minPages,
+  maxPages,
+  tablePreference,
   onFileUpload,
   onAnalysisComplete,
+  onPreferenceChange,
 }) => {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -205,7 +214,7 @@ const DocumentAnalysis: React.FC<DocumentAnalysisProps> = ({
       // 完成后更新父组件状态
       setEditingOverview(false);
       setEditingRequirements(false);
-      onAnalysisComplete(finalOverview, finalRequirements);
+      onAnalysisComplete(fileContent, finalOverview, finalRequirements);
       setMessage({ type: 'success', text: '标书解析完成' });
       
       // 清空流式内容
@@ -222,7 +231,7 @@ const DocumentAnalysis: React.FC<DocumentAnalysisProps> = ({
   };
 
   const handleSaveOverview = () => {
-    onAnalysisComplete(draftOverview, techRequirements);
+    onAnalysisComplete(fileContent, draftOverview, techRequirements);
     setEditingOverview(false);
     setMessage({ type: 'success', text: '项目概述已保存' });
   };
@@ -233,7 +242,7 @@ const DocumentAnalysis: React.FC<DocumentAnalysisProps> = ({
   };
 
   const handleSaveRequirements = () => {
-    onAnalysisComplete(projectOverview, draftRequirements);
+    onAnalysisComplete(fileContent, projectOverview, draftRequirements);
     setEditingRequirements(false);
     setMessage({ type: 'success', text: '技术评分要求已保存' });
   };
@@ -451,6 +460,71 @@ const DocumentAnalysis: React.FC<DocumentAnalysisProps> = ({
           </div>
         </div>
       )}
+
+      {/* 生成偏好设置（任务级） */}
+      <div className="bg-white rounded-lg shadow p-6">
+        <div className="flex items-center gap-2 mb-5">
+          <Cog6ToothIcon className="w-5 h-5 text-gray-600" />
+          <h2 className="text-lg font-semibold text-gray-900">生成偏好设置</h2>
+          <span className="text-xs text-gray-400 ml-2">（当前任务专属，控制 AI 生成标书时的详略和表格使用）</span>
+        </div>
+
+        <div className="space-y-5">
+          {/* 页数范围 */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              生成页数范围
+            </label>
+            <div className="flex items-center gap-3">
+              <input
+                type="number"
+                min={5}
+                max={500}
+                value={minPages}
+                onChange={(e) => {
+                  const v = Math.max(5, parseInt(e.target.value) || 5);
+                  onPreferenceChange?.({ minPages: v });
+                }}
+                className="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+              />
+              <span className="text-gray-500 text-sm">~</span>
+              <input
+                type="number"
+                min={5}
+                max={500}
+                value={maxPages}
+                onChange={(e) => {
+                  const v = Math.min(500, parseInt(e.target.value) || 100);
+                  onPreferenceChange?.({ maxPages: v });
+                }}
+                className="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+              />
+              <span className="text-gray-500 text-sm">页</span>
+            </div>
+            <p className="text-xs text-gray-400 mt-1">
+              AI 将根据此范围控制每章节的详细程度
+            </p>
+          </div>
+
+          {/* 表格偏好 */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              表格数量偏好
+            </label>
+            <select
+              value={tablePreference}
+              onChange={(e) => {
+                onPreferenceChange?.({ tablePreference: e.target.value as 'none' | 'medium' | 'heavy' });
+              }}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+            >
+              <option value="none">🚫 无表格 — 所有内容都用纯文字段落描述</option>
+              <option value="medium">📊 适量表格 — 关键数据用表格展示</option>
+              <option value="heavy">📈 大量表格 — 尽可能使用表格组织内容</option>
+            </select>
+          </div>
+        </div>
+      </div>
 
       {/* 消息提示 */}
       {message && (

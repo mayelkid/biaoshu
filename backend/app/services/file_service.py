@@ -39,6 +39,13 @@ class FileService:
     }
 
     @staticmethod
+    def is_supported_document(content_type: str | None) -> bool:
+        """检查文件类型是否支持"""
+        if not content_type:
+            return False
+        return content_type in FileService.ALLOWED_DOCUMENT_TYPES
+
+    @staticmethod
     async def save_image_locally(image_data: bytes, filename: str) -> Optional[str]:
         """将图片保存到本地 uploads 目录"""
         try:

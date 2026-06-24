@@ -3,6 +3,22 @@
 from typing import Any, Dict, List
 
 
+def _build_generation_preference_text(min_pages: int = 20, max_pages: int = 100, table_preference: str = "medium") -> str:
+    """构建生成偏好文本。"""
+    table_map = {
+        "none": "不生成任何表格，所有内容都用纯文字段落描述。",
+        "medium": "在关键数据、对比信息、参数列表等场景适量使用表格，保持简洁。",
+        "heavy": "大量使用表格来组织内容，包括数据展示、对比分析、参数列表、流程步骤等，尽可能用表格替代文字段落。",
+    }
+
+    return (
+        f"【生成偏好】\n"
+        f"生成页数要求：标书正文总页数约 {min_pages} ~ {max_pages} 页。请据此控制每个章节的详细程度，"
+        f"若范围较窄则内容简洁精炼；若范围较宽则内容详细展开。\n"
+        f"表格使用偏好：{table_map.get(table_preference, table_map['medium'])}"
+    )
+
+
 def _build_outline_system_prompt() -> str:
     """构建目录生成的共享系统提示词。"""
     return """你是一个专业的标书编写专家。根据提供的项目概述和技术评分要求，生成投标文件中技术标部分的目录结构。
@@ -83,6 +99,9 @@ def generate_outline_prompt(
     overview: str,
     requirements: str,
     suggestions: list[str] | None = None,
+    min_pages: int = 20,
+    max_pages: int = 100,
+    table_preference: str = "medium",
 ) -> List[Dict[str, str]]:
     """生成标准目录的提示词。"""
     return [
@@ -94,6 +113,7 @@ def generate_outline_prompt(
             "content": "请生成完整的技术标目录结构，确保覆盖所有技术评分要点。"
             + _format_revision_suggestions(suggestions),
         },
+        {"role": "user", "content": _build_generation_preference_text(min_pages, max_pages, table_preference)},
     ]
 
 
@@ -102,6 +122,9 @@ def generate_outline_with_old_prompt(
     requirements: str,
     old_outline: str | None,
     suggestions: list[str] | None = None,
+    min_pages: int = 20,
+    max_pages: int = 100,
+    table_preference: str = "medium",
 ) -> List[Dict[str, str]]:
     """生成基于旧目录扩写的提示词。"""
     return [
@@ -114,6 +137,7 @@ def generate_outline_with_old_prompt(
             "content": "请在满足技术评分要求的前提下，充分结合用户自己编写的目录，生成完整的技术标目录结构。"
             + _format_revision_suggestions(suggestions),
         },
+        {"role": "user", "content": _build_generation_preference_text(min_pages, max_pages, table_preference)},
     ]
 
 
@@ -121,6 +145,9 @@ def generate_top_level_outline_prompt(
     overview: str,
     requirements: str,
     suggestions: list[str] | None = None,
+    min_pages: int = 20,
+    max_pages: int = 100,
+    table_preference: str = "medium",
 ) -> List[Dict[str, str]]:
     """生成仅包含一级目录的提示词。"""
     return [
@@ -132,6 +159,7 @@ def generate_top_level_outline_prompt(
             "content": "请仅生成一级目录列表，不要生成二级和三级目录。返回的 JSON 仍然使用 outline 字段，每个一级目录都必须包含 id、title、description。"
             + _format_revision_suggestions(suggestions),
         },
+        {"role": "user", "content": _build_generation_preference_text(min_pages, max_pages, table_preference)},
     ]
 
 
@@ -140,6 +168,9 @@ def generate_top_level_outline_with_old_prompt(
     requirements: str,
     old_outline: str | None,
     suggestions: list[str] | None = None,
+    min_pages: int = 20,
+    max_pages: int = 100,
+    table_preference: str = "medium",
 ) -> List[Dict[str, str]]:
     """生成结合旧目录的一级目录提示词。"""
     return [
@@ -152,6 +183,7 @@ def generate_top_level_outline_with_old_prompt(
             "content": "请在满足技术评分要求的前提下，充分结合用户自己编写的目录，仅生成一级目录，不要生成二级和三级目录。返回的 JSON 使用 outline 字段，每个一级目录都必须包含 id、title、description。"
             + _format_revision_suggestions(suggestions),
         },
+        {"role": "user", "content": _build_generation_preference_text(min_pages, max_pages, table_preference)},
     ]
 
 
@@ -201,6 +233,9 @@ def generate_aligned_children_outline_prompt(
     parent_item: Dict[str, Any],
     requirement_group: Dict[str, Any],
     suggestions: list[str] | None = None,
+    min_pages: int = 20,
+    max_pages: int = 100,
+    table_preference: str = "medium",
 ) -> List[Dict[str, str]]:
     """围绕指定技术评分大类生成二三级目录。"""
     parent_id = parent_item.get("id", "1")
@@ -243,6 +278,7 @@ def generate_aligned_children_outline_prompt(
             "content": '请仅生成该一级目录下的二级、三级目录，一级目录标题必须保持为当前给定标题，返回格式必须是 {"children": [...]}。'
             + _format_revision_suggestions(suggestions),
         },
+        {"role": "user", "content": _build_generation_preference_text(min_pages, max_pages, table_preference)},
     ]
 
 
@@ -253,6 +289,9 @@ def generate_aligned_children_outline_with_old_prompt(
     requirement_group: Dict[str, Any],
     old_outline: str | None,
     suggestions: list[str] | None = None,
+    min_pages: int = 20,
+    max_pages: int = 100,
+    table_preference: str = "medium",
 ) -> List[Dict[str, str]]:
     """结合旧目录参考，为指定评分大类生成二三级目录。"""
     messages = generate_aligned_children_outline_prompt(
@@ -261,6 +300,9 @@ def generate_aligned_children_outline_with_old_prompt(
         parent_item=parent_item,
         requirement_group=requirement_group,
         suggestions=suggestions,
+        min_pages=min_pages,
+        max_pages=max_pages,
+        table_preference=table_preference,
     )
     messages.insert(
         5, {"role": "user", "content": f"用户自己编写的目录参考：\n{old_outline or ''}"}
@@ -270,6 +312,7 @@ def generate_aligned_children_outline_with_old_prompt(
         "content": '请在覆盖当前技术评分大类细项的前提下，参考用户目录优化当前一级目录下的二级、三级目录，但不得修改当前一级目录标题，返回格式必须是 {"children": [...]}。'
         + _format_revision_suggestions(suggestions),
     }
+    messages.append({"role": "user", "content": _build_generation_preference_text(min_pages, max_pages, table_preference)})
     return messages
 
 
@@ -278,6 +321,9 @@ def generate_children_outline_prompt(
     requirements: str,
     parent_item: Dict[str, Any],
     suggestions: list[str] | None = None,
+    min_pages: int = 20,
+    max_pages: int = 100,
+    table_preference: str = "medium",
 ) -> List[Dict[str, str]]:
     """为指定一级目录生成二三级目录。"""
     parent_id = parent_item.get("id", "1")
@@ -308,6 +354,7 @@ def generate_children_outline_prompt(
             "content": '请仅生成该一级目录下的二级、三级目录，返回格式必须是 {"children": [...]}。'
             + _format_revision_suggestions(suggestions),
         },
+        {"role": "user", "content": _build_generation_preference_text(min_pages, max_pages, table_preference)},
     ]
 
 
@@ -317,6 +364,9 @@ def generate_children_outline_with_old_prompt(
     parent_item: Dict[str, Any],
     old_outline: str | None,
     suggestions: list[str] | None = None,
+    min_pages: int = 20,
+    max_pages: int = 100,
+    table_preference: str = "medium",
 ) -> List[Dict[str, str]]:
     """为指定一级目录生成二三级目录，并结合旧目录参考。"""
     messages = generate_children_outline_prompt(
@@ -324,6 +374,9 @@ def generate_children_outline_with_old_prompt(
         requirements=requirements,
         parent_item=parent_item,
         suggestions=suggestions,
+        min_pages=min_pages,
+        max_pages=max_pages,
+        table_preference=table_preference,
     )
     messages.insert(
         4, {"role": "user", "content": f"用户自己编写的目录：\n{old_outline or ''}"}
@@ -333,6 +386,7 @@ def generate_children_outline_with_old_prompt(
         "content": '请在满足技术评分要求的前提下，充分结合用户自己编写的目录，仅生成该一级目录下的二级、三级目录，返回格式必须是 {"children": [...]}。'
         + _format_revision_suggestions(suggestions),
     }
+    messages.append({"role": "user", "content": _build_generation_preference_text(min_pages, max_pages, table_preference)})
     return messages
 
 

@@ -1,7 +1,7 @@
 /**
  * 标书制作页面（独立页面）
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast, Toaster } from 'react-hot-toast';
 import { ArrowLeftIcon, ArrowRightIcon, DocumentCheckIcon } from '@heroicons/react/24/outline';
@@ -26,6 +26,28 @@ const ProposalPage: React.FC = () => {
   const [outlineData, setOutlineData] = useState<any>(null);
   const [status, setStatus] = useState<'draft' | 'analyzing' | 'outline' | 'content' | 'completed'>('draft');
   const [progress, setProgress] = useState(0);
+  // 生成偏好（任务级）
+  const [minPages, setMinPages] = useState(20);
+  const [maxPages, setMaxPages] = useState(100);
+  const [tablePreference, setTablePreference] = useState<'none' | 'medium' | 'heavy'>('medium');
+
+  // 使用 ref 跟踪最新数据，避免闭包问题
+  const dataRef = useRef({
+    fileContent: '',
+    projectOverview: '',
+    techRequirements: '',
+    outlineData: null as any,
+    currentStep: 1,
+    status: 'draft' as 'draft' | 'analyzing' | 'outline' | 'content' | 'completed',
+    progress: 0,
+    minPages: 20,
+    maxPages: 100,
+    tablePreference: 'medium' as 'none' | 'medium' | 'heavy',
+  });
+
+  useEffect(() => {
+    dataRef.current = { fileContent, projectOverview, techRequirements, outlineData, currentStep, status, progress, minPages, maxPages, tablePreference };
+  }, [fileContent, projectOverview, techRequirements, outlineData, currentStep, status, progress, minPages, maxPages, tablePreference]);
 
   useEffect(() => {
     if (!taskId || loading) return;
@@ -39,18 +61,23 @@ const ProposalPage: React.FC = () => {
       setOutlineData(foundTask.outlineData || null);
       setStatus(foundTask.status || 'draft');
       setProgress(foundTask.progress || 0);
+      // 加载任务级偏好
+      setMinPages(foundTask.minPages ?? 20);
+      setMaxPages(foundTask.maxPages ?? 100);
+      setTablePreference(foundTask.tablePreference ?? 'medium');
     }
   }, [taskId, getTaskById, loading]);
 
+  // 当 task 从外部更新时（如列表页刷新），同步到本地 state
+  // 但避免覆盖用户正在编辑的未保存内容——通过比较 updatedAt 判断
   useEffect(() => {
     if (!task) return;
-    setCurrentStep(task.currentStep || 1);
-    setFileContent(task.fileContent || '');
-    setProjectOverview(task.projectOverview || '');
-    setTechRequirements(task.techRequirements || '');
-    setOutlineData(task.outlineData || null);
-    setStatus(task.status || 'draft');
-    setProgress(task.progress || 0);
+    const serverStep = task.currentStep || 1;
+    const serverStatus = task.status || 'draft';
+    // 只在服务器数据比本地新时同步（避免覆盖用户正在编辑的内容）
+    // 但由于页面加载时已经通过上面的 useEffect 同步过了，
+    // 这里只需要处理 task 从外部更新的情况
+    // 简单方案：只在页面首次加载时从 task 同步，后续 task 变化不覆盖本地 state
   }, [task]);
 
   if (loading) {
@@ -78,57 +105,73 @@ const ProposalPage: React.FC = () => {
   }
 
   const handlePrev = async () => {
-    if (currentStep > 1) {
-      const prevStep = currentStep - 1;
+    const data = dataRef.current;
+    if (data.currentStep > 1) {
+      const prevStep = data.currentStep - 1;
       const newProgress = Math.round((prevStep / 3) * 100);
       const statusMap: Record<number, 'draft' | 'analyzing' | 'outline' | 'content' | 'completed'> = {
         1: 'analyzing',
         2: 'outline',
         3: 'content',
       };
-      
+
       setCurrentStep(prevStep);
       setProgress(newProgress);
       setStatus(statusMap[prevStep]);
-      
+
       await updateTask(task.id, {
+        fileContent: data.fileContent,
+        projectOverview: data.projectOverview,
+        techRequirements: data.techRequirements,
+        outlineData: data.outlineData,
         currentStep: prevStep,
         progress: newProgress,
         status: statusMap[prevStep],
+        minPages: data.minPages,
+        maxPages: data.maxPages,
+        tablePreference: data.tablePreference,
       });
     }
   };
 
   const handleNext = async () => {
-    if (currentStep < 3) {
-      if (currentStep === 1) {
-        if (!projectOverview.trim() || !techRequirements.trim()) {
+    const data = dataRef.current;
+    if (data.currentStep < 3) {
+      if (data.currentStep === 1) {
+        if (!data.projectOverview.trim() || !data.techRequirements.trim()) {
           toast.error('请先完成标书解析，生成项目概况和技术要求后再进行下一步');
           return;
         }
-      } else if (currentStep === 2) {
-        if (!outlineData || !outlineData.outline || outlineData.outline.length === 0) {
+      } else if (data.currentStep === 2) {
+        if (!data.outlineData || !data.outlineData.outline || data.outlineData.outline.length === 0) {
           toast.error('请先生成目录后再进行下一步');
           return;
         }
       }
 
-      const nextStep = currentStep + 1;
+      const nextStep = data.currentStep + 1;
       const newProgress = Math.round((nextStep / 3) * 100);
       const statusMap: Record<number, 'draft' | 'analyzing' | 'outline' | 'content' | 'completed'> = {
         1: 'analyzing',
         2: 'outline',
         3: 'content',
       };
-      
+
       setCurrentStep(nextStep);
       setProgress(newProgress);
       setStatus(statusMap[nextStep]);
-      
+
       await updateTask(task.id, {
+        fileContent: data.fileContent,
+        projectOverview: data.projectOverview,
+        techRequirements: data.techRequirements,
+        outlineData: data.outlineData,
         currentStep: nextStep,
         progress: newProgress,
         status: statusMap[nextStep],
+        minPages: data.minPages,
+        maxPages: data.maxPages,
+        tablePreference: data.tablePreference,
       });
     }
   };
@@ -142,23 +185,59 @@ const ProposalPage: React.FC = () => {
       currentStep,
       status,
       progress,
+      minPages,
+      maxPages,
+      tablePreference,
     });
     toast.success('保存成功');
   };
 
-  const handleFileAnalyzed = (overview: string, requirements: string) => {
+  // 解析完成：自动保存到后端
+  const handleFileAnalyzed = async (fc: string, overview: string, requirements: string) => {
+    setFileContent(fc);
     setProjectOverview(overview);
     setTechRequirements(requirements);
     setStatus('analyzing');
+
+    await updateTask(task.id, {
+      fileContent: fc,
+      projectOverview: overview,
+      techRequirements: requirements,
+      status: 'analyzing',
+      progress: 33,
+    });
   };
 
-  const handleOutlineGenerated = (outline: typeof outlineData) => {
+  // 目录生成/编辑完成：自动保存到后端
+  const handleOutlineGenerated = async (outline: typeof outlineData) => {
     setOutlineData(outline);
     setStatus('outline');
+
+    await updateTask(task.id, {
+      outlineData: outline,
+      status: 'outline',
+      progress: 66,
+    });
   };
 
-  const handleContentUpdated = (outline: typeof outlineData) => {
+  // 正文生成完成：自动保存到后端
+  const handleContentUpdated = async (outline: typeof outlineData) => {
+    setOutlineData(outline);
     setStatus('content');
+
+    await updateTask(task.id, {
+      outlineData: outline,
+      status: 'content',
+      progress: 100,
+    });
+  };
+
+  // 偏好变更：只更新本地状态，不立即请求接口，等点击下一步/保存时统一保存
+  const handlePreferenceChange = (updates: { minPages?: number; maxPages?: number; tablePreference?: 'none' | 'medium' | 'heavy' }) => {
+    if (updates.minPages !== undefined) setMinPages(updates.minPages);
+    if (updates.maxPages !== undefined) setMaxPages(updates.maxPages);
+    if (updates.tablePreference !== undefined) setTablePreference(updates.tablePreference);
+    // 不立即调用 updateTask，由 handleNext / handlePrev / handleSave 统一保存
   };
 
   const renderStepContent = () => {
@@ -169,8 +248,12 @@ const ProposalPage: React.FC = () => {
             fileContent={fileContent}
             projectOverview={projectOverview}
             techRequirements={techRequirements}
+            minPages={minPages}
+            maxPages={maxPages}
+            tablePreference={tablePreference}
             onFileUpload={setFileContent}
             onAnalysisComplete={handleFileAnalyzed}
+            onPreferenceChange={handlePreferenceChange}
           />
         );
       case 2:
@@ -180,12 +263,19 @@ const ProposalPage: React.FC = () => {
             techRequirements={techRequirements}
             outlineData={outlineData}
             onOutlineGenerated={handleOutlineGenerated}
+            minPages={minPages}
+            maxPages={maxPages}
+            tablePreference={tablePreference}
           />
         );
       case 3:
         return (
           <ContentEdit
             outlineData={outlineData}
+            onContentUpdated={handleContentUpdated}
+            minPages={minPages}
+            maxPages={maxPages}
+            tablePreference={tablePreference}
           />
         );
       default:

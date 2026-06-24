@@ -83,6 +83,10 @@ export const useProposalTaskState = () => {
       if (updates.progress !== undefined) payload.progress = updates.progress;
       if (updates.name !== undefined) payload.name = updates.name;
       if (updates.description !== undefined) payload.description = updates.description;
+      if (updates.companyId !== undefined) payload.companyId = updates.companyId;
+      if (updates.minPages !== undefined) payload.minPages = updates.minPages;
+      if (updates.maxPages !== undefined) payload.maxPages = updates.maxPages;
+      if (updates.tablePreference !== undefined) payload.tablePreference = updates.tablePreference;
 
       const response = await taskApi.updateTask(taskId, payload);
       if (response.data.success) {
