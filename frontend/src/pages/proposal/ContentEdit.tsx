@@ -482,7 +482,7 @@ const ContentEdit: React.FC<ContentEditProps> = ({
             {/* 项目概述 */}
             {outlineData.project_overview && (
               <div className="bg-blue-50 border-l-4 border-blue-400 p-6 mb-8 mt-0">
-                <h2 className="text-lg font-semibold text-blue-900 mb-2">项目概述</h2>
+                <h2 className="text-lg font-semibold text-blue-900 mb-2 mt-2">项目概述</h2>
                 <p className="text-blue-800 overflow-auto max-h-[400px]" style={{whiteSpace:'pre-wrap'}}>{outlineData.project_overview}</p>
               </div>
             )}

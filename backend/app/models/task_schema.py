@@ -58,8 +58,8 @@ class ProposalTask(BaseModel):
     user_id: str = Field(..., alias="userId", description="用户ID")
     company_id: Optional[str] = Field(None, alias="companyId", description="关联的企业ID")
     # 生成偏好
-    min_pages: int = Field(20, alias="minPages", ge=5, le=500, description="生成标书最小页数")
-    max_pages: int = Field(100, alias="maxPages", ge=5, le=500, description="生成标书最大页数")
+    min_pages: int = Field(20, alias="minPages", ge=5, description="生成标书最小页数")
+    max_pages: int = Field(100, alias="maxPages", ge=5, description="生成标书最大页数")
     table_preference: str = Field("medium", alias="tablePreference", description="表格偏好: none/medium/heavy")
 
 
