@@ -764,7 +764,7 @@ const KnowledgeBase: React.FC = () => {
                     <div
                       key={company.id}
                       onClick={() => enterCompany(company)}
-                      className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg hover:border-blue-300 cursor-pointer transition-all"
+                      className="bg-white border border-gray-200 rounded-lg p-5 pb-4 hover:shadow-lg hover:border-blue-300 cursor-pointer transition-all"
                     >
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex items-center gap-3">

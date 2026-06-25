@@ -4,7 +4,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { collectSseText, documentApi, getErrorMessage } from '../../services';
-import { CloudArrowUpIcon, DocumentIcon, Cog6ToothIcon } from '@heroicons/react/24/outline';
+import { CloudArrowUpIcon, DocumentIcon, Cog6ToothIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 import { draftStorage } from '../../utils/draftStorage';
 
 const STREAM_UPDATE_DELAY = 80;
@@ -253,10 +253,13 @@ const DocumentAnalysis: React.FC<DocumentAnalysisProps> = ({
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* 文件上传区域 */}
       <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">📄 文档上传</h2>
+        <div className="flex items-center gap-2 mb-5">
+          <DocumentTextIcon className="w-5 h-5 text-gray-600" />
+          <h2 className="text-xl font-semibold text-gray-900">文档上传</h2>
+        </div>
         
         <div 
           className="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center hover:border-gray-400 transition-colors cursor-pointer"
@@ -299,7 +302,10 @@ const DocumentAnalysis: React.FC<DocumentAnalysisProps> = ({
       {/* 文档分析区域 */}
       {fileContent && (
         <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">🔍 文档分析</h2>
+          <div className="flex items-center gap-2 mb-5">
+            <DocumentTextIcon className="w-5 h-5 text-gray-600" />
+            <h2 className="text-xl font-semibold text-gray-900">文档分析</h2>
+          </div>
           
           <div className="flex justify-center mb-6">
             <button
@@ -463,10 +469,10 @@ const DocumentAnalysis: React.FC<DocumentAnalysisProps> = ({
 
       {/* 生成偏好设置（任务级） */}
       <div className="bg-white rounded-lg shadow p-6">
+        
         <div className="flex items-center gap-2 mb-5">
           <Cog6ToothIcon className="w-5 h-5 text-gray-600" />
-          <h2 className="text-lg font-semibold text-gray-900">生成偏好设置</h2>
-          <span className="text-xs text-gray-400 ml-2">（当前任务专属，控制 AI 生成标书时的详略和表格使用）</span>
+          <h2 className="text-xl font-semibold text-gray-900">生成偏好设置</h2>
         </div>
 
         <div className="space-y-5">

@@ -90,18 +90,19 @@ const TaskList: React.FC = () => {
       completed: { text: '已完成', className: 'bg-green-100 text-green-700' },
     };
     const badge = badges[status] || badges.pending;
-    return (
-      <span className={`px-2 py-1 text-xs font-medium rounded-full ${badge.className}`}>
-        {badge.text}
-      </span>
-    );
-  };
-
-  const getStatusIcon = (status: string) => {
     if (status === 'completed') {
-      return <CheckCircleIcon className="w-5 h-5 text-green-500" />;
+      return (
+        <span className={`flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full ${badge.className}`}>
+          <CheckCircleIcon className="w-4 h-4" />{badge.text}
+        </span>
+      );
+    }else{
+       return (
+        <span className={`flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full ${badge.className}`}>
+          <ClockIcon className="w-4 h-4" />{badge.text}
+        </span>
+      );
     }
-    return <ClockIcon className="w-5 h-5 text-gray-400" />;
   };
 
   if (loading) {
@@ -159,7 +160,7 @@ const TaskList: React.FC = () => {
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
                           <DocumentTextIcon className="w-5 h-5 text-blue-600" />
                         </div>
                         <div>
@@ -178,8 +179,9 @@ const TaskList: React.FC = () => {
                         </div>
                       </div>
                       <div className="flex items-center gap-4 mt-3">
-                        {getStatusIcon(task.status)}
-                        {getStatusBadge(task.status)}
+                        <span className="flex items-center">
+                          {getStatusBadge(task.status)}
+                        </span>
                         <span className="text-sm text-gray-400">
                           进度: {task.progress}%
                         </span>
